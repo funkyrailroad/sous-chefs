@@ -3,8 +3,8 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from .models import Recipe, Task, UserTask
-from .data import test_recipe
+from api.models import Recipe, Task, UserTask
+from api.data import test_recipe
 
 
 class IndexViewTests(TestCase):
