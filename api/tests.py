@@ -1,4 +1,5 @@
 from django.test import TestCase
+from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
@@ -24,7 +25,7 @@ class IndexViewTests(TestCase):
         Task.objects.bulk_create(task_objs)
 
 
-class UserTaskTests(TestCase):
+class UserTaskTests(APITestCase):
     @classmethod
     def setUp(cls):
         cls.tasks = test_recipe["tasks"]
@@ -52,3 +53,5 @@ class UserTaskTests(TestCase):
                 UserTask(task=task, status=UserTask.TaskStatus.UPCOMING)
             )
         UserTask.objects.bulk_create(user_task_objs)
+        self.client.force_authenticate(user=self.users[0])
+        resp = self.client.get(reverse("user-task-list"))
