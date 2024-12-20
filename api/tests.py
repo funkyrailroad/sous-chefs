@@ -44,14 +44,11 @@ class UserTaskTests(TestCase):
             user = User.objects.create(username=f"user_{i}")
             cls.users.append(user)
 
-    def test_assign_all_tasks_from_a_recipe_to_users(self):
-        from itertools import cycle
-
+    def test_assign_initialize_all_user_tasks_for_a_recipe(self):
         tasks = Task.objects.filter(recipe_id=self.recipe_id).order_by("id")
         user_task_objs = []
-        for user, task in zip(cycle(self.users), tasks):
+        for task in tasks:
             user_task_objs.append(
-                UserTask(user=user, task=task, status=UserTask.TaskStatus.UPCOMING)
+                UserTask(task=task, status=UserTask.TaskStatus.UPCOMING)
             )
-
         UserTask.objects.bulk_create(user_task_objs)

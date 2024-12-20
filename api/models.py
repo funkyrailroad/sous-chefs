@@ -19,7 +19,7 @@ class Task(models.Model):
 
 
 class UserTask(models.Model):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
 
     class TaskStatus(models.TextChoices):
