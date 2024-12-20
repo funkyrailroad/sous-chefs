@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 
+from .models import Recipe, Task, UserTask
 from .data import test_recipe
 
 
@@ -20,4 +22,36 @@ class IndexViewTests(TestCase):
 
         task_objs = [Task(description=task, recipe_id=recipe_id) for task in self.tasks]
         Task.objects.bulk_create(task_objs)
-        breakpoint()
+
+
+class UserTaskTests(TestCase):
+    @classmethod
+    def setUp(cls):
+        cls.tasks = test_recipe["tasks"]
+        cls.recipe_name = test_recipe["name"]
+        obj = Recipe.objects.create(name=cls.recipe_name)
+        cls.recipe_id = obj.id
+        task_objs = [
+            Task(description=task, recipe_id=cls.recipe_id) for task in cls.tasks
+        ]
+        Task.objects.bulk_create(task_objs)
+
+        # create users
+        cls.n_users = 3
+        cls.users = []
+        User = get_user_model()
+        for i in range(cls.n_users):
+            user = User.objects.create(username=f"user_{i}")
+            cls.users.append(user)
+
+    def test_assign_all_tasks_from_a_recipe_to_users(self):
+        from itertools import cycle
+
+        tasks = Task.objects.filter(recipe_id=self.recipe_id).order_by("id")
+        user_task_objs = []
+        for user, task in zip(cycle(self.users), tasks):
+            user_task_objs.append(
+                UserTask(user=user, task=task, status=UserTask.TaskStatus.UPCOMING)
+            )
+
+        UserTask.objects.bulk_create(user_task_objs)
