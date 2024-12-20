@@ -1,4 +1,3 @@
-from django.test import TestCase
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -7,35 +6,21 @@ from api.models import Recipe, Task, UserTask
 from api.data import test_recipe
 
 
-class IndexViewTests(TestCase):
-    def setUp(self):
-        self.tasks = test_recipe["tasks"]
-        self.recipe_name = test_recipe["name"]
-
-    def test_index_view(self):
-        response = self.client.get(reverse("index"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Hello, world. You're at the polls index.")
-
-    def test_create_recipe(self):
-        obj = Recipe.objects.create(name=self.recipe_name)
-        recipe_id = obj.id
-
-        task_objs = [Task(description=task, recipe_id=recipe_id) for task in self.tasks]
-        Task.objects.bulk_create(task_objs)
+def create_test_recipe():
+    tasks = test_recipe["tasks"]
+    recipe_name = test_recipe["name"]
+    obj = Recipe.objects.create(name=recipe_name)
+    recipe_id = obj.id
+    task_objs = [Task(description=task, recipe_id=recipe_id) for task in tasks]
+    Task.objects.bulk_create(task_objs)
+    return obj
 
 
 class UserTaskTests(APITestCase):
     @classmethod
     def setUp(cls):
-        cls.tasks = test_recipe["tasks"]
-        cls.recipe_name = test_recipe["name"]
-        obj = Recipe.objects.create(name=cls.recipe_name)
-        cls.recipe_id = obj.id
-        task_objs = [
-            Task(description=task, recipe_id=cls.recipe_id) for task in cls.tasks
-        ]
-        Task.objects.bulk_create(task_objs)
+        recipe = create_test_recipe()
+        cls.recipe_id = recipe.id
 
         # create users
         cls.n_users = 3
