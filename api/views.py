@@ -9,6 +9,19 @@ def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 
+class RecipeViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = s.RecipeSerializer
+    queryset = m.Recipe.objects.all()
+
+
+class RecipeTaskViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = s.TaskSerializer
+
+    def get_queryset(self):
+        recipe_id = self.kwargs["pk"]
+        return m.Task.objects.filter(recipe=recipe_id).order_by("id")
+
+
 class UserTaskViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = s.UserTaskSerializer
 

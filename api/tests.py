@@ -45,6 +45,36 @@ class UserTaskTests(APITestCase):
             user = User.objects.create(username=f"user_{i}")
             cls.users.append(user)
 
+    def test_list_recipes(self):
+        self.client.force_authenticate(user=self.users[0])
+        resp = self.client.get(reverse("recipe-list"))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_detail_recipe(self):
+        self.client.force_authenticate(user=self.users[0])
+        recipe = Recipe.objects.first()
+        resp = self.client.get(
+            reverse(
+                "recipe-detail",
+                kwargs=dict(
+                    pk=recipe.id,
+                ),
+            )
+        )
+
+    def test_list_recipe_tasks(self):
+        self.client.force_authenticate(user=self.users[0])
+        recipe = Recipe.objects.first()
+        resp = self.client.get(
+            reverse(
+                "recipe-tasks-list",
+                kwargs=dict(
+                    pk=recipe.id,
+                ),
+            )
+        )
+        self.assertEqual(resp.status_code, 200)
+
     def test_assign_initialize_all_user_tasks_for_a_recipe(self):
         tasks = Task.objects.filter(recipe_id=self.recipe_id).order_by("id")
         user_task_objs = []
