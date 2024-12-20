@@ -20,6 +20,18 @@ recipe_tasks_list = views.RecipeTaskViewSet.as_view(
     }
 )
 
+my_task_list = views.MyTaskViewSet.as_view(
+    {
+        "get": "list",
+    }
+)
+
+my_task_detail = views.MyTaskViewSet.as_view(
+    {
+        "get": "retrieve",
+    }
+)
+
 user_task_list = views.UserTaskViewSet.as_view(
     {
         "get": "list",
@@ -39,4 +51,6 @@ urlpatterns = [
     path("recipes/<int:pk>/tasks/", recipe_tasks_list, name="recipe-tasks-list"),
     path("user-tasks/", user_task_list, name="user-task-list"),
     path("user-tasks/<int:pk>/", user_task_detail, name="user-task-detail"),
+    path("my-tasks/", my_task_list, name="my-task-list"),
+    path("my-tasks/<int:pk>/", my_task_detail, name="my-task-detail"),
 ]

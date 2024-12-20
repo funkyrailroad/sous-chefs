@@ -23,6 +23,15 @@ class RecipeTaskViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class UserTaskViewSet(viewsets.ReadOnlyModelViewSet):
+    """General endpoints for all user tasks. Probably best for an admin."""
+
+    serializer_class = s.UserTaskSerializer
+    queryset = m.UserTask.objects.all()
+
+
+class MyTaskViewSet(viewsets.ReadOnlyModelViewSet):
+    """Specific endpoint for the authenticated user's tasks."""
+
     serializer_class = s.UserTaskSerializer
 
     def get_queryset(self):
