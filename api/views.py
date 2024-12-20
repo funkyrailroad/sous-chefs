@@ -10,10 +10,6 @@ def index(request):
 
 
 class UserTaskViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    A simple ViewSet for viewing accounts.
-    """
-
     serializer_class = s.UserTaskSerializer
 
     def get_queryset(self):
