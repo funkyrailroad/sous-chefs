@@ -16,19 +16,21 @@ def create_test_recipe():
     return obj
 
 
+def create_test_users(n_users: int):
+    users = []
+    User = get_user_model()
+    for i in range(n_users):
+        user = User.objects.create(username=f"user_{i}")
+        users.append(user)
+    return users
+
+
 class UserTaskTests(APITestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
         cls.recipe_id = recipe.id
-
-        # create users
-        cls.n_users = 3
-        cls.users = []
-        User = get_user_model()
-        for i in range(cls.n_users):
-            user = User.objects.create(username=f"user_{i}")
-            cls.users.append(user)
+        cls.users = create_test_users(3)
 
     def test_list_recipes(self):
         self.client.force_authenticate(user=self.users[0])
