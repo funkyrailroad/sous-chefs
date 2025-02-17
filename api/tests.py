@@ -16,11 +16,20 @@ def create_test_recipe() -> Recipe:
     return obj
 
 
-def create_test_users(n_users: int) -> list[get_user_model()]:
+def create_regular_test_users(n_users: int) -> list[get_user_model()]:
     users = []
     User = get_user_model()
     for i in range(n_users):
-        user = User.objects.create(username=f"user_{i}")
+        user = User.objects.create(username=f"regular_user_{i}")
+        users.append(user)
+    return users
+
+
+def create_admin_test_users(n_users: int) -> list[get_user_model()]:
+    users = []
+    User = get_user_model()
+    for i in range(n_users):
+        user = User.objects.create(username=f"admin_user_{i}", is_staff=True)
         users.append(user)
     return users
 
@@ -39,7 +48,7 @@ class UserTaskTests(APITestCase):
     def setUp(cls):
         recipe = create_test_recipe()
         cls.recipe_id = recipe.id
-        cls.users = create_test_users(3)
+        cls.users = create_regular_test_users(3)
 
     def test_list_recipes(self):
         self.client.force_authenticate(user=self.users[0])
@@ -88,7 +97,12 @@ class AssignTaskTests(APITestCase):
     def setUp(cls):
         recipe = create_test_recipe()
         cls.recipe_id = recipe.id
-        cls.users = create_test_users(3)
+        cls.users = create_regular_test_users(3)
+        cls.user_1 = cls.users[0]
+        cls.user_2 = cls.users[1]
+        cls.user_3 = cls.users[2]
+        cls.admin_user = create_admin_test_users(1)[0]
+
         cls.user_task_objs = initialize_user_tasks(cls.recipe_id)
 
         for ind, user in enumerate(cls.users):
