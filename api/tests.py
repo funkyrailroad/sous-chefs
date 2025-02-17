@@ -48,15 +48,15 @@ class UserTaskTests(APITestCase):
     def setUp(cls):
         recipe = create_test_recipe()
         cls.recipe_id = recipe.id
-        cls.users = create_regular_test_users(3)
+        cls.admin_user = create_admin_test_users(1)[0]
 
     def test_list_recipes(self):
-        self.client.force_authenticate(user=self.users[0])
+        self.client.force_authenticate(user=self.admin_user)
         resp = self.client.get(reverse("recipe-list"))
         self.assertEqual(resp.status_code, 200)
 
     def test_detail_recipe(self):
-        self.client.force_authenticate(user=self.users[0])
+        self.client.force_authenticate(user=self.admin_user)
         recipe = Recipe.objects.first()
         resp = self.client.get(
             reverse(
@@ -69,7 +69,7 @@ class UserTaskTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_list_recipe_tasks(self):
-        self.client.force_authenticate(user=self.users[0])
+        self.client.force_authenticate(user=self.admin_user)
         recipe = Recipe.objects.first()
         resp = self.client.get(
             reverse(
@@ -89,7 +89,7 @@ class UserTaskTests(APITestCase):
                 UserTask(task=task, status=UserTask.TaskStatus.UPCOMING)
             )
         UserTask.objects.bulk_create(user_task_objs)
-        self.client.force_authenticate(user=self.users[0])
+        self.client.force_authenticate(user=self.admin_user)
         resp = self.client.get(reverse("user-task-list"))
         self.assertEqual(resp.status_code, 200)
 
@@ -121,7 +121,7 @@ class AssignTaskTests(APITestCase):
             self.assertGreater(len(data), 0, data)
 
     def test_see_all_tasks(self):
-        self.client.force_authenticate(user=self.users[0])
+        self.client.force_authenticate(user=self.admin_user)
         resp = self.client.get(reverse("user-task-list"))
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
