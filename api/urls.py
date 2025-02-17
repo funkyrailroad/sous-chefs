@@ -29,6 +29,7 @@ my_task_list = views.MyTaskViewSet.as_view(
 my_task_detail = views.MyTaskViewSet.as_view(
     {
         "get": "retrieve",
+        "patch": "partial_update",
     }
 )
 

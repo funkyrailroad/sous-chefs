@@ -141,3 +141,29 @@ class AssignTaskTests(APITestCase):
             )
         )
         self.assertEqual(resp.status_code, 200)
+
+    def test_user_1_marks_user_1_task_as_complete(self):
+        self.client.force_authenticate(user=self.user_1)
+        resp = self.client.patch(
+            reverse(
+                "my-task-detail",
+                kwargs=dict(
+                    pk=self.user_1_task_id,
+                ),
+            ),
+            data={"status": "CO"},
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_user_2_marks_user_1_task_as_complete(self):
+        self.client.force_authenticate(user=self.user_2)
+        resp = self.client.patch(
+            reverse(
+                "my-task-detail",
+                kwargs=dict(
+                    pk=self.user_1_task_id,
+                ),
+            ),
+            data={"status": "CO"},
+        )
+        self.assertEqual(resp.status_code, 404)
