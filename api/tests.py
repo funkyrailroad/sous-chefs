@@ -19,7 +19,7 @@ def create_test_recipe() -> Recipe:
 def create_regular_test_users(n_users: int) -> list[get_user_model()]:
     users = []
     User = get_user_model()
-    for i in range(n_users):
+    for i in range(1, n_users + 1):
         user = User.objects.create(username=f"regular_user_{i}")
         users.append(user)
     return users
@@ -28,7 +28,7 @@ def create_regular_test_users(n_users: int) -> list[get_user_model()]:
 def create_admin_test_users(n_users: int) -> list[get_user_model()]:
     users = []
     User = get_user_model()
-    for i in range(n_users):
+    for i in range(1, n_users + 1):
         user = User.objects.create(username=f"admin_user_{i}", is_staff=True)
         users.append(user)
     return users
