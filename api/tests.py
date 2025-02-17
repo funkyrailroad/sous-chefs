@@ -66,6 +66,7 @@ class UserTaskTests(APITestCase):
                 ),
             )
         )
+        self.assertEqual(resp.status_code, 200)
 
     def test_list_recipe_tasks(self):
         self.client.force_authenticate(user=self.users[0])
@@ -90,6 +91,7 @@ class UserTaskTests(APITestCase):
         UserTask.objects.bulk_create(user_task_objs)
         self.client.force_authenticate(user=self.users[0])
         resp = self.client.get(reverse("user-task-list"))
+        self.assertEqual(resp.status_code, 200)
 
 
 class AssignTaskTests(APITestCase):
