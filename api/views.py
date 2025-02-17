@@ -2,7 +2,7 @@ from rest_framework import viewsets
 import api.models as m
 import api.serializers as s
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import mixins, viewsets
+from rest_framework import mixins
 
 from django.http import HttpResponse
 

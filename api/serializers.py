@@ -15,7 +15,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class UserTaskSerializer(serializers.ModelSerializer):
-    task_description = serializers.SerializerMethodField('get_task_description')
+    task_description = serializers.SerializerMethodField("get_task_description")
 
     def get_task_description(self, obj):
         return obj.task.description
