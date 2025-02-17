@@ -112,6 +112,9 @@ class AssignTaskTests(APITestCase):
             user_task.user = user
             user_task.save()
 
+        user_1_tasks = UserTask.objects.filter(user=cls.user_1)
+        cls.user_1_task_id = user_1_tasks.first().id
+
     def test_all_users_see_a_task(self):
         for user in self.users:
             self.client.force_authenticate(user=user)
@@ -126,3 +129,15 @@ class AssignTaskTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(len(data), len(self.user_task_objs))
+
+    def test_user_1_gets_my_task_detail(self):
+        self.client.force_authenticate(user=self.user_1)
+        resp = self.client.get(
+            reverse(
+                "my-task-detail",
+                kwargs=dict(
+                    pk=self.user_1_task_id,
+                ),
+            )
+        )
+        self.assertEqual(resp.status_code, 200)
