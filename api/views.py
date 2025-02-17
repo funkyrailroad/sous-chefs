@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 import api.models as m
 import api.serializers as s
+from rest_framework.permissions import IsAuthenticated
 
 from django.http import HttpResponse
 
@@ -33,6 +34,7 @@ class MyTaskViewSet(viewsets.ReadOnlyModelViewSet):
     """Specific endpoint for the authenticated user's tasks."""
 
     serializer_class = s.UserTaskSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return m.UserTask.objects.filter(user=self.request.user)
