@@ -110,18 +110,20 @@ class AssignTaskTests(APITestCase):
         for ind, user in enumerate(cls.users):
             user_task = cls.user_task_objs[ind]
             user_task.user = user
+            user_task.status = UserTask.TaskStatus.ACTIVE
             user_task.save()
 
         user_1_tasks = UserTask.objects.filter(user=cls.user_1)
         cls.user_1_task_id = user_1_tasks.first().id
 
-    def test_all_users_see_a_task(self):
+    def test_all_users_see_an_active_task(self):
         for user in self.users:
             self.client.force_authenticate(user=user)
             resp = self.client.get(reverse("my-task-list"))
             self.assertEqual(resp.status_code, 200)
             data = resp.json()
             self.assertGreater(len(data), 0, data)
+            self.assertEqual(data[0]["status"], UserTask.TaskStatus.ACTIVE)
 
     def test_see_all_tasks(self):
         self.client.force_authenticate(user=self.admin_user)
