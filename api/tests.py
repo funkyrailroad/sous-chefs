@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 from api.models import Recipe, Task, UserTask
 from api.data import test_recipe
 
+UserModel = get_user_model()
+
 
 def create_test_recipe() -> Recipe:
     tasks = test_recipe["tasks"]
@@ -169,3 +171,100 @@ class AssignTaskTests(APITestCase):
             data={"status": "CO"},
         )
         self.assertEqual(resp.status_code, 404)
+
+
+def get_next_task_for_user(user_id: int, recipe_id: int) -> Task:
+    try:
+        return get_currently_assigned_task(user_id, recipe_id)
+    except UserTask.DoesNotExist:
+        pass
+
+    task = get_first_unassigned_task(recipe_id)
+    task.user_id = user_id
+    task.status = UserTask.TaskStatus.ACTIVE
+    task.save()
+    return task
+
+
+def get_first_unassigned_task(recipe_id: int) -> Task:
+    first_unassigned_task = (
+        UserTask.objects.filter(user=None, task__recipe=recipe_id)
+        .order_by("task_id")
+        .first()
+    )
+    return first_unassigned_task
+
+
+def get_currently_assigned_task(user_id: int, recipe_id: int) -> Task:
+    task = UserTask.objects.get(
+        user_id=user_id, task__recipe=recipe_id, status=UserTask.TaskStatus.ACTIVE
+    )
+    return task
+
+
+class AssignNextTaskTests(APITestCase):
+    @classmethod
+    def setUp(cls):
+        recipe = create_test_recipe()
+        cls.recipe_id = recipe.id
+        cls.user = create_regular_test_users(1)[0]
+        cls.user_id = cls.user.id
+        cls.admin_user = create_admin_test_users(1)[0]
+
+        cls.user_task_objs = initialize_user_tasks(cls.recipe_id)
+
+    def list_user_tasks(self):
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.get(reverse("my-task-list"))
+        self.assertEqual(resp.status_code, 200)
+        return resp.json()
+
+    def test_with_previously_assigned_task_completed(self):
+        # verify no assigned tasks
+        tasks = self.list_user_tasks()
+        self.assertEqual(len(tasks), 0)
+
+        # assign task and mark it as completed
+        first_unassigned_task = get_first_unassigned_task(self.recipe_id)
+        first_unassigned_task.user = self.user
+        first_unassigned_task.status = UserTask.TaskStatus.COMPLETED
+        first_unassigned_task.save()
+
+        # run function
+        task = get_next_task_for_user(self.user_id, self.recipe_id)
+        self.assertEqual(task.user, self.user)
+        self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
+
+        # should return the next available task
+        tasks = self.list_user_tasks()
+        self.assertEqual(len(tasks), 2)
+
+    def test_without_previously_assigned_task(self):
+        get_next_task_for_user(self.user.id, self.recipe_id)
+        tasks = self.list_user_tasks()
+        self.assertEqual(len(tasks), 1)
+        task = tasks[0]
+        self.assertEqual(task["status"], UserTask.TaskStatus.ACTIVE)
+
+    def test_with_previously_assigned_task_still_active(self):
+        # should return the currently assigned and still active task
+        # or raise an error
+
+        # verify no assigned tasks
+        tasks = self.list_user_tasks()
+        self.assertEqual(len(tasks), 0)
+
+        # assign task and mark it as active
+        first_unassigned_task = get_first_unassigned_task(self.recipe_id)
+        first_unassigned_task.user = self.user
+        first_unassigned_task.status = UserTask.TaskStatus.ACTIVE
+        first_unassigned_task.save()
+
+        # run function
+        task = get_next_task_for_user(self.user_id, self.recipe_id)
+        self.assertEqual(task.user, self.user)
+        self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
+
+        # should not have assigned a new task
+        tasks = self.list_user_tasks()
+        self.assertEqual(len(tasks), 1)
