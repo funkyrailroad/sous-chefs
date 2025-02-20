@@ -45,6 +45,14 @@ def initialize_user_tasks(recipe_id: int) -> list[UserTask]:
     return user_task_objs
 
 
+class SousChefsBaseTestCase(APITestCase):
+    def list_user_tasks(self):
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.get(reverse("my-task-list"))
+        self.assertEqual(resp.status_code, 200)
+        return resp.json()
+
+
 class UserTaskTests(APITestCase):
     @classmethod
     def setUp(cls):
@@ -96,7 +104,7 @@ class UserTaskTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-class AssignTaskTests(APITestCase):
+class AssignTaskTests(SousChefsBaseTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -202,7 +210,7 @@ def get_currently_assigned_task(user_id: int, recipe_id: int) -> Task:
     return task
 
 
-class AssignNextTaskTests(APITestCase):
+class AssignNextTaskTests(SousChefsBaseTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -212,12 +220,6 @@ class AssignNextTaskTests(APITestCase):
         cls.admin_user = create_admin_test_users(1)[0]
 
         cls.user_task_objs = initialize_user_tasks(cls.recipe_id)
-
-    def list_user_tasks(self):
-        self.client.force_authenticate(user=self.user)
-        resp = self.client.get(reverse("my-task-list"))
-        self.assertEqual(resp.status_code, 200)
-        return resp.json()
 
     def test_with_previously_assigned_task_completed(self):
         # verify no assigned tasks
