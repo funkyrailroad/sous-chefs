@@ -46,8 +46,8 @@ def initialize_user_tasks(recipe_id: int) -> list[UserTask]:
 
 
 class SousChefsBaseTestCase(APITestCase):
-    def list_user_tasks(self):
-        self.client.force_authenticate(user=self.user)
+    def list_user_tasks(self, user):
+        self.client.force_authenticate(user=user)
         resp = self.client.get(reverse("my-task-list"))
         self.assertEqual(resp.status_code, 200)
         return resp.json()
@@ -223,7 +223,7 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
 
     def test_with_previously_assigned_task_completed(self):
         # verify no assigned tasks
-        tasks = self.list_user_tasks()
+        tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as completed
@@ -238,12 +238,12 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
         # should return the next available task
-        tasks = self.list_user_tasks()
+        tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 2)
 
     def test_without_previously_assigned_task(self):
         get_next_task_for_user(self.user.id, self.recipe_id)
-        tasks = self.list_user_tasks()
+        tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 1)
         task = tasks[0]
         self.assertEqual(task["status"], UserTask.TaskStatus.ACTIVE)
@@ -253,7 +253,7 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         # or raise an error
 
         # verify no assigned tasks
-        tasks = self.list_user_tasks()
+        tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as active
@@ -268,5 +268,5 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
         # should not have assigned a new task
-        tasks = self.list_user_tasks()
+        tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 1)
