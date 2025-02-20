@@ -159,6 +159,13 @@ class AssignTaskTests(SousChefsBaseTestCase):
         )
         self.assertEqual(resp.status_code, 200)
 
+        data = resp.data
+        self.assertEqual(data["status"], UserTask.TaskStatus.COMPLETED)
+
+        # get user_1's tasks again, there should be a new one
+        tasks = self.list_user_tasks(self.user_1)
+        self.assertEqual(len(tasks), 2)
+
     def test_user_2_marks_user_1_task_as_complete(self):
         self.client.force_authenticate(user=self.user_2)
         resp = self.client.patch(
