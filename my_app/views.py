@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-import api.models as m
-import api.serializers as s
-import api.utils as u
+import my_app.models as m
+import my_app.serializers as s
+import my_app.utils as u
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins
 

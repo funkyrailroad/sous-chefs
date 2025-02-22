@@ -1,4 +1,4 @@
-from api.models import Task, UserTask
+from my_app.models import Task, UserTask
 
 
 def initialize_user_tasks(recipe_id: int) -> list[UserTask]:

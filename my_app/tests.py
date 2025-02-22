@@ -2,9 +2,9 @@ from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from api.models import Recipe, Task, UserTask
-from api.data import test_recipe
-import api.utils as u
+from my_app.models import Recipe, Task, UserTask
+from my_app.data import test_recipe
+import my_app.utils as u
 
 UserModel = get_user_model()
 
