@@ -47,11 +47,13 @@ user_task_detail = views.UserTaskViewSet.as_view(
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("recipes/", recipe_list, name="recipe-list"),
-    path("recipes/<int:pk>/", recipe_detail, name="recipe-detail"),
-    path("recipes/<int:pk>/tasks/", recipe_tasks_list, name="recipe-tasks-list"),
-    path("user-tasks/", user_task_list, name="user-task-list"),
-    path("user-tasks/<int:pk>/", user_task_detail, name="user-task-detail"),
-    path("my-tasks/", my_task_list, name="my-task-list"),
-    path("my-tasks/<int:pk>/", my_task_detail, name="my-task-detail"),
+
+    # restful api views
+    path("api/recipes/", recipe_list, name="recipe-list"),
+    path("api/recipes/<int:pk>/", recipe_detail, name="recipe-detail"),
+    path("api/recipes/<int:pk>/tasks/", recipe_tasks_list, name="recipe-tasks-list"),
+    path("api/user-tasks/", user_task_list, name="user-task-list"),
+    path("api/user-tasks/<int:pk>/", user_task_detail, name="user-task-detail"),
+    path("api/my-tasks/", my_task_list, name="my-task-list"),
+    path("api/my-tasks/<int:pk>/", my_task_detail, name="my-task-detail"),
 ]
