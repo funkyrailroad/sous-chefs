@@ -7,12 +7,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins
 
 from django.db import transaction
-from django.http import HttpResponse
+from django.template.response import TemplateResponse
 from rest_framework.exceptions import ValidationError
 
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
+    return TemplateResponse(request, "my_app/index.html", {})
+
+
+def home(request):
+    return TemplateResponse(request, "my_app/home.html", {})
+
+
+def recipes_view(request):
+    recipes = m.Recipe.objects.all()
+    context = {"recipes": recipes}
+    return TemplateResponse(request, "my_app/recipes-view.html", context)
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):

@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 
+app_name = "my_app"
 recipe_list = views.RecipeViewSet.as_view(
     {
         "get": "list",
@@ -47,6 +48,8 @@ user_task_detail = views.UserTaskViewSet.as_view(
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("home", views.home, name="home"),
+    path("recipes-view", views.recipes_view, name="recipes-view"),
 
     # restful api views
     path("api/recipes/", recipe_list, name="recipe-list"),
