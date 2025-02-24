@@ -40,7 +40,7 @@ def create_admin_test_users(n_users: int) -> list[get_user_model()]:
 class SousChefsBaseTestCase(APITestCase):
     def list_user_tasks(self, user):
         self.client.force_authenticate(user=user)
-        resp = self.client.get(reverse("my-task-list"))
+        resp = self.client.get(reverse("my_app:my-task-list"))
         self.assertEqual(resp.status_code, 200)
         return resp.json()
 
@@ -54,7 +54,7 @@ class UserTaskTests(APITestCase):
 
     def test_list_recipes(self):
         self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("recipe-list"))
+        resp = self.client.get(reverse("my_app:recipe-list"))
         self.assertEqual(resp.status_code, 200)
 
     def test_detail_recipe(self):
@@ -62,7 +62,7 @@ class UserTaskTests(APITestCase):
         recipe = Recipe.objects.first()
         resp = self.client.get(
             reverse(
-                "recipe-detail",
+                "my_app:recipe-detail",
                 kwargs=dict(
                     pk=recipe.id,
                 ),
@@ -75,7 +75,7 @@ class UserTaskTests(APITestCase):
         recipe = Recipe.objects.first()
         resp = self.client.get(
             reverse(
-                "recipe-tasks-list",
+                "my_app:recipe-tasks-list",
                 kwargs=dict(
                     pk=recipe.id,
                 ),
@@ -92,7 +92,7 @@ class UserTaskTests(APITestCase):
             )
         UserTask.objects.bulk_create(user_task_objs)
         self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("user-task-list"))
+        resp = self.client.get(reverse("my_app:user-task-list"))
         self.assertEqual(resp.status_code, 200)
 
 
@@ -121,7 +121,7 @@ class AssignTaskTests(SousChefsBaseTestCase):
     def test_all_users_see_an_active_task(self):
         for user in self.users:
             self.client.force_authenticate(user=user)
-            resp = self.client.get(reverse("my-task-list"))
+            resp = self.client.get(reverse("my_app:my-task-list"))
             self.assertEqual(resp.status_code, 200)
             data = resp.json()
             self.assertGreater(len(data), 0, data)
@@ -129,7 +129,7 @@ class AssignTaskTests(SousChefsBaseTestCase):
 
     def test_see_all_tasks(self):
         self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("user-task-list"))
+        resp = self.client.get(reverse("my_app:user-task-list"))
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(len(data), len(self.user_task_objs))
@@ -138,7 +138,7 @@ class AssignTaskTests(SousChefsBaseTestCase):
         self.client.force_authenticate(user=self.user_1)
         resp = self.client.get(
             reverse(
-                "my-task-detail",
+                "my_app:my-task-detail",
                 kwargs=dict(
                     pk=self.user_1_task_id,
                 ),
@@ -150,7 +150,7 @@ class AssignTaskTests(SousChefsBaseTestCase):
         self.client.force_authenticate(user=self.user_1)
         resp = self.client.patch(
             reverse(
-                "my-task-detail",
+                "my_app:my-task-detail",
                 kwargs=dict(
                     pk=self.user_1_task_id,
                 ),
@@ -170,7 +170,7 @@ class AssignTaskTests(SousChefsBaseTestCase):
         self.client.force_authenticate(user=self.user_2)
         resp = self.client.patch(
             reverse(
-                "my-task-detail",
+                "my_app:my-task-detail",
                 kwargs=dict(
                     pk=self.user_1_task_id,
                 ),
