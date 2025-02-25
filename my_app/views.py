@@ -19,6 +19,17 @@ def home(request):
     return TemplateResponse(request, "my_app/home.html", {})
 
 
+def get_tasks_for_user(user_id):
+    tasks = m.UserTask.objects.filter(user=user_id)
+    return tasks
+
+
+def my_tasks_view(request):
+    my_tasks = get_tasks_for_user(request.user.id)
+    context = {"my_tasks": my_tasks}
+    return TemplateResponse(request, "my_app/my-tasks-view.html", context)
+
+
 def recipes_view(request):
     recipes = m.Recipe.objects.all()
     context = {"recipes": recipes}

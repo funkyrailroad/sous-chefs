@@ -50,6 +50,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("home", views.home, name="home"),
     path("recipes-view", views.recipes_view, name="recipes-view"),
+    path("my-tasks-view", views.my_tasks_view, name="my-tasks-view"),
 
     # restful api views
     path("api/recipes/", recipe_list, name="recipe-list"),
