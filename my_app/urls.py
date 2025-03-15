@@ -49,7 +49,8 @@ user_task_detail = views.UserTaskViewSet.as_view(
 urlpatterns = [
     path("", views.index, name="index"),
     path("home", views.home, name="home"),
-    path("recipes-view", views.recipes_view, name="recipes-view"),
+    path("recipes-list-view", views.recipes_list_view, name="recipes-list-view"),
+    path("recipe-detail-view/<int:recipe_id>/", views.recipes_detail_view, name="recipe-detail-view"),
     path("my-tasks-view", views.my_tasks_view, name="my-tasks-view"),
 
     # restful api views

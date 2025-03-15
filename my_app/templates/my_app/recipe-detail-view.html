@@ -1,0 +1,8 @@
+{% extends "my_app/base.html" %}
+
+{% block body %}
+  <h1 class="title is-3">{{recipe.name}}</h1>
+  {% for task in tasks %}
+    <p>{{task.id}}. {{task.description}}</p>
+  {% endfor %}
+{% endblock %}

@@ -1,4 +1,8 @@
-from my_app.models import Task, UserTask
+from my_app.models import Task, UserTask, Recipe
+
+
+def get_recipe(recipe_id):
+    return Recipe.objects.get(id=recipe_id)
 
 
 def initialize_user_tasks(recipe_id: int) -> list[UserTask]:
