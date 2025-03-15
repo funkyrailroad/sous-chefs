@@ -30,10 +30,10 @@ def my_tasks_view(request):
     return TemplateResponse(request, "my_app/my-tasks-view.html", context)
 
 
-def recipes_view(request):
+def recipes_list_view(request):
     recipes = m.Recipe.objects.all()
     context = {"recipes": recipes}
-    return TemplateResponse(request, "my_app/recipes-view.html", context)
+    return TemplateResponse(request, "my_app/recipes-list-view.html", context)
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):
