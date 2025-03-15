@@ -43,6 +43,19 @@ def recipes_detail_view(request, recipe_id):
     return TemplateResponse(request, "my_app/recipe-detail-view.html", context)
 
 
+def create_cooking_session_view(request, recipe_id):
+    # NOTE: unfinished
+    # group id
+    recipe = u.get_recipe(recipe_id)
+    u.initialize_user_tasks(recipe_id)
+    # return a url (eventually QR code) that other people can go to to join
+    # endpoint = request.build_absolute_uri()
+
+    # return current users in group
+    context = {"recipe": recipe}
+    return TemplateResponse(request, "my_app/create-cooking-session.html", context)
+
+
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = s.RecipeSerializer
     queryset = m.Recipe.objects.all()
