@@ -2,6 +2,6 @@
 {% block body %}
   <h1 class="title is-3">Recipes</h1>
   {% for recipe in recipes %}
-    <p>{{recipe.name}}</p>
+    <a href="{% url 'my_app:recipe-detail-view' recipe.id %}">{{recipe.name}}</a>
    {% endfor %}
 {% endblock %}
