@@ -24,7 +24,10 @@ def create_regular_test_users(n_users: int) -> list[get_user_model()]:
     User = get_user_model()
     for i in range(1, n_users + 1):
         username = f"regular_user_{i}"
-        user = User.objects.create(username=username, email=f"{username}@example.com")
+        user = User.objects.create(
+            username=username,
+            email=f"{username}@example.com",
+        )
         users.append(user)
     return users
 
@@ -33,7 +36,12 @@ def create_admin_test_users(n_users: int) -> list[get_user_model()]:
     users = []
     User = get_user_model()
     for i in range(1, n_users + 1):
-        user = User.objects.create(username=f"admin_user_{i}", is_staff=True)
+        username = f"admin_user_{i}"
+        user = User.objects.create(
+            username=username,
+            email=f"{username}@example.com",
+            is_staff=True,
+        )
         users.append(user)
     return users
 
@@ -241,3 +249,47 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         # should not have assigned a new task
         tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 1)
+
+
+class CookingSessionTests(SousChefsBaseTestCase):
+    """
+    - Create a cooking session with admin user
+    - add a non admin user to the cooking session
+    - initialize tasks
+    - iterate through all tasks
+
+
+    - create two different recipes
+        - (recipe_1, recipe_2)
+    - create two admin users
+        - (admin_1, admin_2)
+    - create two cooking sessions with the two admin users for the two recipes
+        - (cooking_session_1, cooking_session_2)
+    - add two non admin users to each cooking group (4 nonadmin users total)
+        - regular_user_1a
+        - regular_user_1b
+        - regular_user_2a
+        - regular_user_2b
+    - initialize tasks
+    - make initial task assignments
+    - iterate through all the tasks
+
+    - make sure steps from recipe_1 only appear for users in cooking_session_1
+    - make sure steps from recipe_2 only appear for users in cooking_session_2
+
+    """
+
+    User = get_user_model()
+    print(User.objects.all())
+    admin_user = create_admin_test_users(1)[0]
+    # admin_user.save()
+
+    def test_create_cooking_session(self):
+        from django.contrib.auth import get_user_model
+        from django.contrib.auth.models import Group
+
+        User = get_user_model()
+        new_group, created = Group.objects.get_or_create(name="your_group_name")
+        # breakpoint()
+
+        pass
