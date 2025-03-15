@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
+    "accounts",
     "my_app",
 ]
 
@@ -82,6 +83,8 @@ DATABASES = {
     }
 }
 
+# Custom user model
+AUTH_USER_MODEL = "accounts.CustomUser"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -101,6 +104,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    "accounts.auth_backends.EmailBackend",  # Custom email authentication
+    "django.contrib.auth.backends.ModelBackend",  # Default username-based authentication
+]
 
 # REST Framework settings
 REST_FRAMEWORK = {
