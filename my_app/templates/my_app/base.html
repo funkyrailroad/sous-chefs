@@ -12,12 +12,18 @@
     {% endblock %}
   </head>
   <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-    <h1 class="subtitle is-5"> <a href="{% url 'my_app:home' %}">Home</a> </h1> 
-    {% if messages %}
-      <ul class="messagelist">{% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-      {% endfor %}</ul>
-    {% endif %}
+
+    <h1 class="subtitle is-5">
+      <p>
+        <!-- <a href="{% url 'my_app:home' %}">Home</a> -->
+        {% if user.is_authenticated %}
+            Welcome, {{ user.username }}! <a href="{% url 'logout' %}">Logout</a></p>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+        {% endif %}
+      </p>
+    </h1>
+
     {% block body %}{% endblock %}
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
   </body>
