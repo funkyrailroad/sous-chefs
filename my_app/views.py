@@ -36,6 +36,13 @@ def recipes_list_view(request):
     return TemplateResponse(request, "my_app/recipes-list-view.html", context)
 
 
+def recipes_detail_view(request, id):
+    recipe = m.Recipe.objects.get(id=id)
+    tasks = recipe.task_set.all()
+    context = {"recipe": recipe, "tasks": tasks}
+    return TemplateResponse(request, "my_app/recipe-detail-view.html", context)
+
+
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = s.RecipeSerializer
     queryset = m.Recipe.objects.all()
