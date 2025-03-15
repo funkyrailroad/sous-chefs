@@ -36,8 +36,8 @@ def recipes_list_view(request):
     return TemplateResponse(request, "my_app/recipes-list-view.html", context)
 
 
-def recipes_detail_view(request, id):
-    recipe = m.Recipe.objects.get(id=id)
+def recipes_detail_view(request, recipe_id):
+    recipe = u.get_recipe(recipe_id)
     tasks = recipe.task_set.all()
     context = {"recipe": recipe, "tasks": tasks}
     return TemplateResponse(request, "my_app/recipe-detail-view.html", context)
