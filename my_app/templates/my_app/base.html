@@ -2,7 +2,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Django htmx patterns</title>
+    <title>{% block title %} Sous Chefs {% endblock %}</title>
+    <meta charset="UTF-8">
     <!-- <link rel="stylesheet" href="{% static 'css/base.css' %}"> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,13 +13,66 @@
     {% endblock %}
   </head>
   <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-    <h1 class="subtitle is-5"> <a href="{% url 'my_app:home' %}">Home</a> </h1> 
-    {% if messages %}
-      <ul class="messagelist">{% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-      {% endfor %}</ul>
-    {% endif %}
-    {% block body %}{% endblock %}
+
+    <!-- Navigation Bar -->
+    <nav class="navbar is-light" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="{% url 'my_app:home' %}">
+                <strong>Sous Chefs</strong>
+            </a>
+
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarMenu" class="navbar-menu">
+            <div class="navbar-end">
+                {% if user.is_authenticated %}
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            Welcome, {{ user.username }}
+                        </a>
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item" href="#">Profile</a>
+                            <hr class="navbar-divider">
+                            <a class="navbar-item" href="{% url 'logout' %}">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a class="navbar-item" href="{% url 'login' %}">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            {% block body %}
+            {% endblock %}
+        </div>
+    </section>
+
+    <!-- Navbar Toggle Script -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const burger = document.querySelector(".navbar-burger");
+        const menu = document.querySelector("#navbarMenu");
+
+        if (burger && menu) {
+            burger.addEventListener("click", () => {
+                burger.classList.toggle("is-active");
+                menu.classList.toggle("is-active");
+            });
+        }
+    });
+    </script>
+
+
+
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
   </body>
 </html>
