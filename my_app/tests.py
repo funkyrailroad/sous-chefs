@@ -23,7 +23,8 @@ def create_regular_test_users(n_users: int) -> list[get_user_model()]:
     users = []
     User = get_user_model()
     for i in range(1, n_users + 1):
-        user = User.objects.create(username=f"regular_user_{i}")
+        username = f"regular_user_{i}"
+        user = User.objects.create(username=username, email=f"{username}@example.com")
         users.append(user)
     return users
 
