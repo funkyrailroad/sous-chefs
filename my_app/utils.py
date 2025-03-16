@@ -14,7 +14,7 @@ def initialize_user_tasks(recipe_id: int) -> list[UserTask]:
     return user_task_objs
 
 
-def get_next_task_for_user(user_id: int, recipe_id: int) -> Task:
+def get_next_task_for_user(user_id: int, recipe_id: int) -> UserTask:
     try:
         return get_currently_assigned_task(user_id, recipe_id)
     except UserTask.DoesNotExist:
@@ -27,7 +27,7 @@ def get_next_task_for_user(user_id: int, recipe_id: int) -> Task:
     return task
 
 
-def get_first_unassigned_task(recipe_id: int) -> Task:
+def get_first_unassigned_task(recipe_id: int) -> UserTask:
     first_unassigned_task = (
         UserTask.objects.filter(user=None, task__recipe=recipe_id)
         .order_by("task_id")
