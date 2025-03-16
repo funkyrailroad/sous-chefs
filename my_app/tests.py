@@ -6,7 +6,7 @@ from my_app.models import Recipe, Task, UserTask
 from my_app.data import test_recipe
 import my_app.utils as u
 
-UserModel = get_user_model()
+User = get_user_model()
 
 
 def create_test_recipe() -> Recipe:
@@ -19,9 +19,8 @@ def create_test_recipe() -> Recipe:
     return obj
 
 
-def create_regular_test_users(n_users: int) -> list[get_user_model()]:
+def create_regular_test_users(n_users: int) -> list[User]:
     users = []
-    User = get_user_model()
     for i in range(1, n_users + 1):
         username = f"regular_user_{i}"
         user = User.objects.create(
@@ -32,9 +31,8 @@ def create_regular_test_users(n_users: int) -> list[get_user_model()]:
     return users
 
 
-def create_admin_test_users(n_users: int) -> list[get_user_model()]:
+def create_admin_test_users(n_users: int) -> list[User]:
     users = []
-    User = get_user_model()
     for i in range(1, n_users + 1):
         username = f"admin_user_{i}"
         user = User.objects.create(
