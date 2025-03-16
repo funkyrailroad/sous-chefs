@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 from my_app.models import Recipe, Task, UserTask
 from my_app.data import test_recipe
@@ -270,24 +271,50 @@ class CookingSessionTests(SousChefsBaseTestCase):
         - regular_user_2b
     - initialize tasks
     - make initial task assignments
-    - iterate through all the tasks
+    - iterate through all the tasks in group_1
+    - see that all tasks for group 1 are completed
+    - see that no tasks for group 2 are completed
+
 
     - make sure steps from recipe_1 only appear for users in cooking_session_1
     - make sure steps from recipe_2 only appear for users in cooking_session_2
 
     """
 
-    User = get_user_model()
-    print(User.objects.all())
-    admin_user = create_admin_test_users(1)[0]
-    # admin_user.save()
+    @classmethod
+    def setUpTestData(cls):
+        admin_users = create_admin_test_users(2)
+        regular_users = create_regular_test_users(4)
 
-    def test_create_cooking_session(self):
-        from django.contrib.auth import get_user_model
-        from django.contrib.auth.models import Group
+        cls.admin_user_1 = admin_users[0]
+        cls.admin_user_2 = admin_users[1]
 
-        User = get_user_model()
-        new_group, created = Group.objects.get_or_create(name="your_group_name")
-        # breakpoint()
+        cls.regular_user_1a = regular_users[0]
+        cls.regular_user_1b = regular_users[1]
 
-        pass
+        cls.regular_user_2a = regular_users[2]
+        cls.regular_user_2b = regular_users[3]
+
+        group_name_1 = f"{cls.admin_user_1.username}'s Cooking Session"
+        cls.cooking_group_1 = Group.objects.create(name=group_name_1)
+
+        group_name_2 = f"{cls.admin_user_2.username}'s Cooking Session"
+        cls.cooking_group_2 = Group.objects.create(name=group_name_2)
+
+        u.add_user_to_group(cls.admin_user_1.id, cls.cooking_group_1.id)
+        u.add_user_to_group(cls.admin_user_2.id, cls.cooking_group_2.id)
+        u.add_user_to_group(cls.regular_user_1a.id, cls.cooking_group_1.id)
+        u.add_user_to_group(cls.regular_user_1b.id, cls.cooking_group_1.id)
+        u.add_user_to_group(cls.regular_user_2a.id, cls.cooking_group_2.id)
+        u.add_user_to_group(cls.regular_user_2b.id, cls.cooking_group_2.id)
+
+        group_1_users = cls.cooking_group_1.user_set.all()
+        group_2_users = cls.cooking_group_2.user_set.all()
+
+        cls.recipe = create_test_recipe()
+
+        group_1_user_task_objs = u.initialize_user_tasks(cls.recipe.id)
+        u.assign_initial_tasks_to_users(group_1_users, group_1_user_task_objs)
+
+        group_2_user_task_objs = u.initialize_user_tasks(cls.recipe.id)
+        u.assign_initial_tasks_to_users(group_2_users, group_2_user_task_objs)
