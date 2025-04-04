@@ -61,7 +61,7 @@ def get_next_task_for_user(user_id: int, recipe_id: int, group_id: int) -> UserT
     except UserTask.DoesNotExist:
         pass
 
-    task = get_first_unassigned_task(recipe_id)
+    task = get_first_unassigned_task(recipe_id, group_id)
     task.user_id = user_id
     task.status = UserTask.TaskStatus.ACTIVE
     task.save()
@@ -73,9 +73,12 @@ class AllUserTasksAssigned(Exception):
         super().__init__("All tasks have been assigned.")
 
 
-def get_first_unassigned_task(recipe_id: int) -> UserTask:
+def get_first_unassigned_task(recipe_id: int, group_id: int) -> UserTask:
+    # Now that group_id has been added, I probably don't need recipe_id
+    # anymore. Although it may allow for a single group to prepare multiple
+    # recipes at the same time.
     first_unassigned_task = (
-        UserTask.objects.filter(user=None, task__recipe=recipe_id)
+        UserTask.objects.filter(user=None, task__recipe=recipe_id, group_id=group_id)
         .order_by("task_id")
         .first()
     )
