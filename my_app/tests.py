@@ -53,12 +53,18 @@ class SousChefsBaseTestCase(APITestCase):
         return resp.json()
 
 
+def create_test_cooking_group(name: str | None = "Test cooking group") -> Group:
+    group = Group.objects.create(name=name)
+    return group
+
+
 class UserTaskTests(APITestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
         cls.recipe_id = recipe.id
         cls.admin_user = create_admin_test_users(1)[0]
+        cls.cooking_group = create_test_cooking_group()
 
     def test_list_recipes(self):
         self.client.force_authenticate(user=self.admin_user)
@@ -96,7 +102,11 @@ class UserTaskTests(APITestCase):
         user_task_objs = []
         for task in tasks:
             user_task_objs.append(
-                UserTask(task=task, status=UserTask.TaskStatus.UPCOMING)
+                UserTask(
+                    task=task,
+                    status=UserTask.TaskStatus.UPCOMING,
+                    group=self.cooking_group,
+                )
             )
         UserTask.objects.bulk_create(user_task_objs)
         self.client.force_authenticate(user=self.admin_user)
@@ -114,8 +124,9 @@ class AssignTaskTests(SousChefsBaseTestCase):
         cls.user_2 = cls.users[1]
         cls.user_3 = cls.users[2]
         cls.admin_user = create_admin_test_users(1)[0]
+        cls.cooking_group = create_test_cooking_group()
 
-        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id)
+        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id, cls.cooking_group.id)
 
         for ind, user in enumerate(cls.users):
             user_task = cls.user_task_objs[ind]
@@ -196,8 +207,9 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         cls.user = create_regular_test_users(1)[0]
         cls.user_id = cls.user.id
         cls.admin_user = create_admin_test_users(1)[0]
+        cls.cooking_group = create_test_cooking_group()
 
-        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id)
+        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id, cls.cooking_group.id)
 
     def test_with_previously_assigned_task_completed(self):
         # verify no assigned tasks
@@ -313,10 +325,10 @@ class CookingSessionTests(SousChefsBaseTestCase):
 
         cls.recipe = create_test_recipe()
 
-        group_1_user_task_objs = u.initialize_user_tasks(cls.recipe.id)
+        group_1_user_task_objs = u.initialize_user_tasks(cls.recipe.id, cls.cooking_group_1.id)
         u.assign_initial_tasks_to_users(group_1_users, group_1_user_task_objs)
 
-        group_2_user_task_objs = u.initialize_user_tasks(cls.recipe.id)
+        group_2_user_task_objs = u.initialize_user_tasks(cls.recipe.id, cls.cooking_group_2.id)
         u.assign_initial_tasks_to_users(group_2_users, group_2_user_task_objs)
 
     def test_create_cooking_session(self):

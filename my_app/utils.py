@@ -38,11 +38,17 @@ def add_user_to_group(user_id: int, group_id: int) -> None:
     user.groups.add(group)
 
 
-def initialize_user_tasks(recipe_id: int) -> list[UserTask]:
+def initialize_user_tasks(recipe_id: int, group_id: int) -> list[UserTask]:
     tasks = Task.objects.filter(recipe_id=recipe_id).order_by("id")
     user_task_objs = []
     for task in tasks:
-        user_task_objs.append(UserTask(task=task, status=UserTask.TaskStatus.UPCOMING))
+        user_task_objs.append(
+            UserTask(
+                task=task,
+                status=UserTask.TaskStatus.UPCOMING,
+                group_id=group_id,
+            )
+        )
     UserTask.objects.bulk_create(user_task_objs)
     return user_task_objs
 
