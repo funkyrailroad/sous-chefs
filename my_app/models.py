@@ -34,3 +34,8 @@ class UserTask(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.task}..."
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["task", "group"], name="unique user tasks")
+        ]
