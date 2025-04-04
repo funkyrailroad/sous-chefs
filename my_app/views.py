@@ -47,12 +47,19 @@ def create_cooking_session_view(request, recipe_id):
     # NOTE: unfinished
     # group id
     recipe = u.get_recipe(recipe_id)
-    u.initialize_user_tasks(recipe_id)
+
+    cooking_group_name = f"Cook {recipe.name} with {request.user.username}"
+    cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
+
     # return a url (eventually QR code) that other people can go to to join
-    # endpoint = request.build_absolute_uri()
+    # cooking_group_endpoint = request.build_absolute_uri()
 
     # return current users in group
-    context = {"recipe": recipe}
+    context = {
+        "recipe": recipe,
+        "group": cooking_group,
+        # "cooking_group_endpoint": cooking_group_endpoint,
+    }
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
 
 
