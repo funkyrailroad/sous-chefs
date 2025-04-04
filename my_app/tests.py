@@ -318,3 +318,26 @@ class CookingSessionTests(SousChefsBaseTestCase):
 
         group_2_user_task_objs = u.initialize_user_tasks(cls.recipe.id)
         u.assign_initial_tasks_to_users(group_2_users, group_2_user_task_objs)
+
+    def test_create_cooking_session(self):
+        admin1 = self.admin_user_1
+        user_1a = self.regular_user_1a
+        user_1b = self.regular_user_1b
+        ut_1 = u.get_next_task_for_user(admin1.id, self.recipe.id)
+        ut_2 = u.get_next_task_for_user(user_1a.id, self.recipe.id)
+        ut_3 = u.get_next_task_for_user(user_1b.id, self.recipe.id)
+
+        u.mark_task_complete(ut_1)
+        self.assertEqual(ut_1.status, UserTask.TaskStatus.COMPLETED)
+
+        next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id)
+        task_count = 3
+        while next_task:
+            u.mark_task_complete(next_task)
+            try:
+                next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id)
+                task_count += 1
+            except u.AllUserTasksAssigned:
+                break
+
+        self.assertEqual(task_count, len(self.recipe.task_set.all()))

@@ -60,12 +60,19 @@ def get_next_task_for_user(user_id: int, recipe_id: int) -> UserTask:
     return task
 
 
+class AllUserTasksAssigned(Exception):
+    def __init__(self):
+        super().__init__("All tasks have been assigned.")
+
+
 def get_first_unassigned_task(recipe_id: int) -> UserTask:
     first_unassigned_task = (
         UserTask.objects.filter(user=None, task__recipe=recipe_id)
         .order_by("task_id")
         .first()
     )
+    if first_unassigned_task is None:
+        raise AllUserTasksAssigned()
     return first_unassigned_task
 
 
