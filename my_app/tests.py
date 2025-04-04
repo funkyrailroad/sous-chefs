@@ -53,12 +53,18 @@ class SousChefsBaseTestCase(APITestCase):
         return resp.json()
 
 
+def create_test_cooking_group(name: str | None = "Test cooking group") -> Group:
+    group = Group.objects.create(name=name)
+    return group
+
+
 class UserTaskTests(APITestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
         cls.recipe_id = recipe.id
         cls.admin_user = create_admin_test_users(1)[0]
+        cls.cooking_group = create_test_cooking_group()
 
     def test_list_recipes(self):
         self.client.force_authenticate(user=self.admin_user)
@@ -96,7 +102,11 @@ class UserTaskTests(APITestCase):
         user_task_objs = []
         for task in tasks:
             user_task_objs.append(
-                UserTask(task=task, status=UserTask.TaskStatus.UPCOMING)
+                UserTask(
+                    task=task,
+                    status=UserTask.TaskStatus.UPCOMING,
+                    group=self.cooking_group,
+                )
             )
         UserTask.objects.bulk_create(user_task_objs)
         self.client.force_authenticate(user=self.admin_user)
@@ -114,8 +124,9 @@ class AssignTaskTests(SousChefsBaseTestCase):
         cls.user_2 = cls.users[1]
         cls.user_3 = cls.users[2]
         cls.admin_user = create_admin_test_users(1)[0]
+        cls.cooking_group = create_test_cooking_group()
 
-        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id)
+        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id, cls.cooking_group.id)
 
         for ind, user in enumerate(cls.users):
             user_task = cls.user_task_objs[ind]
@@ -196,8 +207,9 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         cls.user = create_regular_test_users(1)[0]
         cls.user_id = cls.user.id
         cls.admin_user = create_admin_test_users(1)[0]
+        cls.cooking_group = create_test_cooking_group()
 
-        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id)
+        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id, cls.cooking_group.id)
 
     def test_with_previously_assigned_task_completed(self):
         # verify no assigned tasks
@@ -205,13 +217,13 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as completed
-        first_unassigned_task = u.get_first_unassigned_task(self.recipe_id)
+        first_unassigned_task = u.get_first_unassigned_task(self.recipe_id, self.cooking_group.id)
         first_unassigned_task.user = self.user
         first_unassigned_task.status = UserTask.TaskStatus.COMPLETED
         first_unassigned_task.save()
 
         # run function
-        task = u.get_next_task_for_user(self.user_id, self.recipe_id)
+        task = u.get_next_task_for_user(self.user_id, self.recipe_id, self.cooking_group.id)
         self.assertEqual(task.user, self.user)
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
@@ -220,7 +232,7 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 2)
 
     def test_without_previously_assigned_task(self):
-        u.get_next_task_for_user(self.user.id, self.recipe_id)
+        u.get_next_task_for_user(self.user.id, self.recipe_id, self.cooking_group.id)
         tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 1)
         task = tasks[0]
@@ -235,13 +247,13 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as active
-        first_unassigned_task = u.get_first_unassigned_task(self.recipe_id)
+        first_unassigned_task = u.get_first_unassigned_task(self.recipe_id, self.cooking_group.id)
         first_unassigned_task.user = self.user
         first_unassigned_task.status = UserTask.TaskStatus.ACTIVE
         first_unassigned_task.save()
 
         # run function
-        task = u.get_next_task_for_user(self.user_id, self.recipe_id)
+        task = u.get_next_task_for_user(self.user_id, self.recipe_id, self.cooking_group.id)
         self.assertEqual(task.user, self.user)
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
@@ -313,29 +325,29 @@ class CookingSessionTests(SousChefsBaseTestCase):
 
         cls.recipe = create_test_recipe()
 
-        group_1_user_task_objs = u.initialize_user_tasks(cls.recipe.id)
+        group_1_user_task_objs = u.initialize_user_tasks(cls.recipe.id, cls.cooking_group_1.id)
         u.assign_initial_tasks_to_users(group_1_users, group_1_user_task_objs)
 
-        group_2_user_task_objs = u.initialize_user_tasks(cls.recipe.id)
+        group_2_user_task_objs = u.initialize_user_tasks(cls.recipe.id, cls.cooking_group_2.id)
         u.assign_initial_tasks_to_users(group_2_users, group_2_user_task_objs)
 
     def test_create_cooking_session(self):
         admin1 = self.admin_user_1
         user_1a = self.regular_user_1a
         user_1b = self.regular_user_1b
-        ut_1 = u.get_next_task_for_user(admin1.id, self.recipe.id)
-        ut_2 = u.get_next_task_for_user(user_1a.id, self.recipe.id)
-        ut_3 = u.get_next_task_for_user(user_1b.id, self.recipe.id)
+        ut_1 = u.get_next_task_for_user(admin1.id, self.recipe.id, self.cooking_group_1.id)
+        ut_2 = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
+        ut_3 = u.get_next_task_for_user(user_1b.id, self.recipe.id, self.cooking_group_1.id)
 
         u.mark_task_complete(ut_1)
         self.assertEqual(ut_1.status, UserTask.TaskStatus.COMPLETED)
 
-        next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id)
+        next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
         task_count = 3
         while next_task:
             u.mark_task_complete(next_task)
             try:
-                next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id)
+                next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
                 task_count += 1
             except u.AllUserTasksAssigned:
                 break
