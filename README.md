@@ -13,8 +13,19 @@ x by default all endpoints must be admin
     - I'm the host and I want to see who is responsible for each task
     - I'm a user and I want to see how I can complete my current task
     - I'm a user and I want to mark my task as complete
-. create a recipe detail page where you can see all the steps
-. click on a recipe and see the steps
+. create a cooking session/group
+    - a "cooking group" is the group of people that are making the same
+      recipe at the same time
+    - add group field to UserTasks (maybe rename to GroupTasks or
+      UserGroupTasks)
+    - each group has a full list of tasks in that table
+    - only one person within each group can be assigned one task
+    - the same user can be assigned that task as part of different tasks
+    - one user can be part of multiple cooking groups
+    - each cooking group needs an id
+    - cooking group may be the wrong term, it could also be
+x create a recipe detail page where you can see all the steps
+x click on a recipe and see the steps
 . do the simplest prototype (relate each task to a scenario)
     . populate test data with initial state of a recipe ready to start cooking
         - I'm a user and I want to see which tasks I have to complete
@@ -45,17 +56,6 @@ x by default all endpoints must be admin
             - mark it as complete
             - see that the next unfinished task is assigned to that new user
             - get_next_task_for_user()
-    . create a cooking group
-        - a "cooking group" is the group of people that are making the same
-          recipe at the same time
-        - add group field to UserTasks (maybe rename to GroupTasks or
-          UserGroupTasks)
-        - each group has a full list of tasks in that table
-        - only one person within each group can be assigned one task
-        - the same user can be assigned that task as part of different tasks
-        - one user can be part of multiple cooking groups
-        - each cooking group needs an id
-        - cooking group may be the wrong term, it could also be
     . accept payments
         - https://django-payments.readthedocs.io/en/latest/
     . be able to add/remove users from a cooking group
