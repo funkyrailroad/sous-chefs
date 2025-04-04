@@ -402,12 +402,13 @@ class CookingSessionTests(SousChefsBaseTestCase):
 
     def test_initialize_cooking_session_doubly(self):
         """Ensure there's no error."""
-        cooking_group_name = f"Cook {self.recipe.name} with {self.admin_user_1.username}"
+        cooking_group_name = (
+            f"Cook {self.recipe.name} with {self.admin_user_1.username}"
+        )
 
         u.initialize_cooking_session(cooking_group_name, self.recipe.id)
 
         u.initialize_cooking_session(cooking_group_name, self.recipe.id)
-
 
     def test_2(self):
         # Additional testing ideas:
