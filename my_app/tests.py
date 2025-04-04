@@ -262,6 +262,26 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 1)
 
 
+class CreateCookingSessionViewTests(SousChefsBaseTestCase):
+    @classmethod
+    def setUp(cls):
+        recipe = create_test_recipe()
+        cls.recipe_id = recipe.id
+        cls.admin_user = create_admin_test_users(1)[0]
+
+    def test_get_create_cooking_session_view(self):
+        self.client.force_authenticate(user=self.admin_user)
+        resp = self.client.get(
+            reverse(
+                "my_app:create-cooking-session",
+                kwargs=dict(
+                    recipe_id=self.recipe_id,
+                ),
+            )
+        )
+        self.assertEqual(resp.status_code, 200)
+
+
 class CookingSessionTests(SousChefsBaseTestCase):
     """
     - Create a cooking session with admin user
