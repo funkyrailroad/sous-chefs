@@ -2,8 +2,14 @@
 {% block body %}
   <h1 class="title is-3">Recipes</h1>
   {% for recipe in recipes %}
-    <a href="{% url 'my_app:recipe-detail-view' recipe.id %}">{{recipe.name}}</a>
-    <p> </p>
-    <a href="{% url 'my_app:create-cooking-session' recipe.id %}">Create cooking session</a>
+  <div class="columns">
+      <div class="column is-offset-1 is-one-fifth">
+        <a href="{% url 'my_app:recipe-detail-view' recipe.id %}">{{recipe.name}}</a>
+      </div>
+
+      <div class="column">
+        <a href="{% url 'my_app:create-cooking-session' recipe.id %}">Create cooking session</a>
+      </div>
+  </div>
    {% endfor %}
 {% endblock %}
