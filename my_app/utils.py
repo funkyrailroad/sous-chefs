@@ -53,9 +53,11 @@ def initialize_user_tasks(recipe_id: int, group_id: int) -> list[UserTask]:
     return user_task_objs
 
 
-def get_next_task_for_user(user_id: int, recipe_id: int) -> UserTask:
+def get_next_task_for_user(user_id: int, recipe_id: int, group_id: int) -> UserTask:
+    # TODO:
+    # ensure the user is in the group
     try:
-        return get_currently_assigned_task(user_id, recipe_id)
+        return get_currently_assigned_task(user_id, recipe_id, group_id)
     except UserTask.DoesNotExist:
         pass
 
@@ -82,7 +84,11 @@ def get_first_unassigned_task(recipe_id: int) -> UserTask:
     return first_unassigned_task
 
 
-def get_currently_assigned_task(user_id: int, recipe_id: int) -> Task:
+def get_currently_assigned_task(
+    user_id: int,
+    recipe_id: int,
+    group_id: int,
+) -> Task:
     task = UserTask.objects.get(
         user_id=user_id, task__recipe=recipe_id, status=UserTask.TaskStatus.ACTIVE
     )

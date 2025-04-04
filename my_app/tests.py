@@ -223,7 +223,7 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         first_unassigned_task.save()
 
         # run function
-        task = u.get_next_task_for_user(self.user_id, self.recipe_id)
+        task = u.get_next_task_for_user(self.user_id, self.recipe_id, self.cooking_group.id)
         self.assertEqual(task.user, self.user)
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
@@ -232,7 +232,7 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 2)
 
     def test_without_previously_assigned_task(self):
-        u.get_next_task_for_user(self.user.id, self.recipe_id)
+        u.get_next_task_for_user(self.user.id, self.recipe_id, self.cooking_group.id)
         tasks = self.list_user_tasks(self.user)
         self.assertEqual(len(tasks), 1)
         task = tasks[0]
@@ -253,7 +253,7 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         first_unassigned_task.save()
 
         # run function
-        task = u.get_next_task_for_user(self.user_id, self.recipe_id)
+        task = u.get_next_task_for_user(self.user_id, self.recipe_id, self.cooking_group.id)
         self.assertEqual(task.user, self.user)
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
@@ -335,19 +335,19 @@ class CookingSessionTests(SousChefsBaseTestCase):
         admin1 = self.admin_user_1
         user_1a = self.regular_user_1a
         user_1b = self.regular_user_1b
-        ut_1 = u.get_next_task_for_user(admin1.id, self.recipe.id)
-        ut_2 = u.get_next_task_for_user(user_1a.id, self.recipe.id)
-        ut_3 = u.get_next_task_for_user(user_1b.id, self.recipe.id)
+        ut_1 = u.get_next_task_for_user(admin1.id, self.recipe.id, self.cooking_group_1.id)
+        ut_2 = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
+        ut_3 = u.get_next_task_for_user(user_1b.id, self.recipe.id, self.cooking_group_1.id)
 
         u.mark_task_complete(ut_1)
         self.assertEqual(ut_1.status, UserTask.TaskStatus.COMPLETED)
 
-        next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id)
+        next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
         task_count = 3
         while next_task:
             u.mark_task_complete(next_task)
             try:
-                next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id)
+                next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
                 task_count += 1
             except u.AllUserTasksAssigned:
                 break

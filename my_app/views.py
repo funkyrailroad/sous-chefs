@@ -119,7 +119,7 @@ class MyTaskViewSet(UpdateListRetrieveViewSet):
                 # Assign a new task to the user
                 try:
                     u.get_next_task_for_user(
-                        request.user.id, serializer.instance.task.recipe_id
+                        request.user.id, serializer.instance.task.recipe_id, instance.group.id
                     )
                 except Exception as e:
                     # If anything goes wrong while assigning a new task, raise an error
