@@ -53,8 +53,8 @@ class SousChefsBaseTestCase(APITestCase):
         return resp.json()
 
 
-def create_test_cooking_group(name: str | None = "Test cooking group") -> Group:
-    group = Group.objects.create(name=name)
+def create_test_cooking_group() -> Group:
+    group = u.create_cooking_group("Test cooking group")
     return group
 
 

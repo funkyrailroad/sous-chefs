@@ -32,6 +32,12 @@ def get_group(group_id: int) -> Group:
     return Group.objects.get(id=group_id)
 
 
+def create_cooking_group(name: str) -> Group:
+    # group = Group.objects.create(name=name)
+    group, created = Group.objects.get_or_create(name=name)
+    return group
+
+
 def add_user_to_group(user_id: int, group_id: int) -> None:
     user = get_user(user_id)
     group = get_group(group_id)
