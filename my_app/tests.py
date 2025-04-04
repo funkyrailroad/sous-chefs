@@ -399,3 +399,10 @@ class CookingSessionTests(SousChefsBaseTestCase):
                 break
 
         self.assertEqual(task_count, len(self.recipe.task_set.all()))
+
+    def test_2(self):
+        # Additional testing ideas:
+        # start to see if the tasks from the second group are still available.
+        # make sure all assigned tasks are assigned in order that the recipe gives
+        # make sure the number of assigned tasks equuals the number of tasks in the recipe
+        pass
