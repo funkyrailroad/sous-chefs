@@ -1,3 +1,4 @@
+from django.test import TestCase
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -45,7 +46,7 @@ def create_admin_test_users(n_users: int) -> list[User]:
     return users
 
 
-class SousChefsBaseTestCase(APITestCase):
+class SousChefsTestCase(TestCase):
     def list_user_tasks(self, user):
         self.client.force_authenticate(user=user)
         resp = self.client.get(reverse("my_app:my-task-list"))
@@ -53,12 +54,16 @@ class SousChefsBaseTestCase(APITestCase):
         return resp.json()
 
 
+class SousChefsAPITestCase(SousChefsTestCase, APITestCase):
+    pass
+
+
 def create_test_cooking_group() -> Group:
     group = u.create_cooking_group("Test cooking group")
     return group
 
 
-class UserTaskTests(APITestCase):
+class UserTaskTests(SousChefsAPITestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -114,7 +119,7 @@ class UserTaskTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-class AssignTaskTests(SousChefsBaseTestCase):
+class AssignTaskTests(SousChefsAPITestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -201,7 +206,7 @@ class AssignTaskTests(SousChefsBaseTestCase):
         self.assertEqual(resp.status_code, 404)
 
 
-class AssignNextTaskTests(SousChefsBaseTestCase):
+class AssignNextTaskTests(SousChefsAPITestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -274,7 +279,7 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 1)
 
 
-class CreateCookingSessionViewTests(SousChefsBaseTestCase):
+class CreateCookingSessionViewTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -282,7 +287,7 @@ class CreateCookingSessionViewTests(SousChefsBaseTestCase):
         cls.admin_user = create_admin_test_users(1)[0]
 
     def test_get_create_cooking_session_view(self):
-        self.client.force_authenticate(user=self.admin_user)
+        self.client.force_login(user=self.admin_user)
         resp = self.client.get(
             reverse(
                 "my_app:create-cooking-session",
@@ -294,7 +299,7 @@ class CreateCookingSessionViewTests(SousChefsBaseTestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-class CookingSessionTests(SousChefsBaseTestCase):
+class CookingSessionTests(SousChefsTestCase):
     """
     - Create a cooking session with admin user
     - add a non admin user to the cooking session
