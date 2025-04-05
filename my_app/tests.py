@@ -47,15 +47,15 @@ def create_admin_test_users(n_users: int) -> list[User]:
 
 
 class SousChefsTestCase(TestCase):
+    pass
+
+
+class SousChefsAPITestCase(SousChefsTestCase, APITestCase):
     def list_user_tasks(self, user):
         self.client.force_authenticate(user=user)
         resp = self.client.get(reverse("my_app:my-task-list"))
         self.assertEqual(resp.status_code, 200)
         return resp.json()
-
-
-class SousChefsAPITestCase(SousChefsTestCase, APITestCase):
-    pass
 
 
 def create_test_cooking_group() -> Group:
