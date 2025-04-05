@@ -53,17 +53,32 @@ def create_cooking_session_view(request, recipe_id):
     cooking_group_name = f"Cook {recipe.name} with {request.user.username}"
     cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
     u.add_user_to_group(request.user.id, cooking_group.id)
+    u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
 
     # return a url (eventually QR code) that other people can go to to join
-    # cooking_group_endpoint = request.build_absolute_uri()
+    join_group_url = request.build_absolute_uri(
+        reverse("my_app:join-cooking-session", args=[cooking_group.id])
+    )
 
     # return current users in group
     context = {
         "recipe": recipe,
         "group": cooking_group,
-        # "cooking_group_endpoint": cooking_group_endpoint,
+        "join_group_url": join_group_url,
     }
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
+
+
+@login_required
+def join_cooking_session_view(request, group_id):
+    group = u.get_group(group_id)
+    u.add_user_to_group(request.user.id, group.id)
+    u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
+    context = {
+        # "recipe": recipe,
+        "group": group,
+    }
+    return TemplateResponse(request, "my_app/join-cooking-session.html", context)
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):

@@ -283,6 +283,7 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
         recipe = create_test_recipe()
         cls.recipe_id = recipe.id
         cls.admin_user = create_admin_test_users(1)[0]
+        cls.regular_user = create_regular_test_users(1)[0]
 
     def test_get_create_cooking_session_view(self):
         self.client.force_login(user=self.admin_user)
@@ -298,6 +299,28 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
         context = resp.context
         group = context["group"]
         self.assertIn(self.admin_user, group.user_set.all())
+        self.assertNotIn(self.regular_user, group.user_set.all())
+
+        # admin has a task
+        self.assertTrue(u.get_currently_assigned_task(self.admin_user, self.recipe_id, group.id))
+
+        # regular user does not have a task
+        with self.assertRaises(UserTask.DoesNotExist):
+            (u.get_currently_assigned_task(self.regular_user, self.recipe_id, group.id),)
+
+        join_group_url = context["join_group_url"]
+        print(join_group_url)
+
+        self.client.force_login(user=self.regular_user)
+        resp = self.client.get(join_group_url)
+        context = resp.context
+        group = context["group"]
+        self.assertIn(self.admin_user, group.user_set.all())
+        self.assertIn(self.regular_user, group.user_set.all())
+
+        admin_task = self.assertTrue(u.get_currently_assigned_task(self.admin_user, self.recipe_id, group.id))
+        reg_task = self.assertTrue(u.get_currently_assigned_task(self.regular_user, self.recipe_id, group.id))
+        self.assertNotEqual(admin_task, reg_task)
 
 
 class CookingSessionTests(SousChefsTestCase):
