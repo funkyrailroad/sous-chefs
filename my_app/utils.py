@@ -74,11 +74,11 @@ def get_next_task_for_user(user_id: int, recipe_id: int, group_id: int) -> UserT
     except UserTask.DoesNotExist:
         pass
 
-    task = get_first_unassigned_task(recipe_id, group_id)
-    task.user_id = user_id
-    task.status = UserTask.TaskStatus.ACTIVE
-    task.save()
-    return task
+    user_task = get_first_unassigned_task(recipe_id, group_id)
+    user_task.user_id = user_id
+    user_task.status = UserTask.TaskStatus.ACTIVE
+    user_task.save()
+    return user_task
 
 
 class AllUserTasksAssigned(Exception):
