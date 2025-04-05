@@ -1,5 +1,5 @@
 from django.test import TestCase
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -47,13 +47,11 @@ def create_admin_test_users(n_users: int) -> list[User]:
 
 
 class SousChefsTestCase(TestCase):
-    pass
+    api_client = APIClient()
 
-
-class SousChefsAPITestCase(SousChefsTestCase, APITestCase):
     def list_user_tasks(self, user):
-        self.client.force_authenticate(user=user)
-        resp = self.client.get(reverse("my_app:my-task-list"))
+        self.api_client.force_authenticate(user=user)
+        resp = self.api_client.get(reverse("my_app:my-task-list"))
         self.assertEqual(resp.status_code, 200)
         return resp.json()
 
@@ -63,7 +61,7 @@ def create_test_cooking_group() -> Group:
     return group
 
 
-class UserTaskTests(SousChefsAPITestCase):
+class UserTaskTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -72,14 +70,14 @@ class UserTaskTests(SousChefsAPITestCase):
         cls.cooking_group = create_test_cooking_group()
 
     def test_list_recipes(self):
-        self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("my_app:recipe-list"))
+        self.api_client.force_authenticate(user=self.admin_user)
+        resp = self.api_client.get(reverse("my_app:recipe-list"))
         self.assertEqual(resp.status_code, 200)
 
     def test_detail_recipe(self):
-        self.client.force_authenticate(user=self.admin_user)
+        self.api_client.force_authenticate(user=self.admin_user)
         recipe = Recipe.objects.first()
-        resp = self.client.get(
+        resp = self.api_client.get(
             reverse(
                 "my_app:recipe-detail",
                 kwargs=dict(
@@ -90,9 +88,9 @@ class UserTaskTests(SousChefsAPITestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_list_recipe_tasks(self):
-        self.client.force_authenticate(user=self.admin_user)
+        self.api_client.force_authenticate(user=self.admin_user)
         recipe = Recipe.objects.first()
-        resp = self.client.get(
+        resp = self.api_client.get(
             reverse(
                 "my_app:recipe-tasks-list",
                 kwargs=dict(
@@ -114,12 +112,12 @@ class UserTaskTests(SousChefsAPITestCase):
                 )
             )
         UserTask.objects.bulk_create(user_task_objs)
-        self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("my_app:user-task-list"))
+        self.api_client.force_authenticate(user=self.admin_user)
+        resp = self.api_client.get(reverse("my_app:user-task-list"))
         self.assertEqual(resp.status_code, 200)
 
 
-class AssignTaskTests(SousChefsAPITestCase):
+class AssignTaskTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -146,23 +144,23 @@ class AssignTaskTests(SousChefsAPITestCase):
 
     def test_all_users_see_an_active_task(self):
         for user in self.users:
-            self.client.force_authenticate(user=user)
-            resp = self.client.get(reverse("my_app:my-task-list"))
+            self.api_client.force_authenticate(user=user)
+            resp = self.api_client.get(reverse("my_app:my-task-list"))
             self.assertEqual(resp.status_code, 200)
             data = resp.json()
             self.assertGreater(len(data), 0, data)
             self.assertEqual(data[0]["status"], UserTask.TaskStatus.ACTIVE)
 
     def test_see_all_tasks(self):
-        self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("my_app:user-task-list"))
+        self.api_client.force_authenticate(user=self.admin_user)
+        resp = self.api_client.get(reverse("my_app:user-task-list"))
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(len(data), len(self.user_task_objs))
 
     def test_user_1_gets_my_task_detail(self):
-        self.client.force_authenticate(user=self.user_1)
-        resp = self.client.get(
+        self.api_client.force_authenticate(user=self.user_1)
+        resp = self.api_client.get(
             reverse(
                 "my_app:my-task-detail",
                 kwargs=dict(
@@ -173,8 +171,8 @@ class AssignTaskTests(SousChefsAPITestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_user_1_marks_user_1_task_as_complete(self):
-        self.client.force_authenticate(user=self.user_1)
-        resp = self.client.patch(
+        self.api_client.force_authenticate(user=self.user_1)
+        resp = self.api_client.patch(
             reverse(
                 "my_app:my-task-detail",
                 kwargs=dict(
@@ -193,8 +191,8 @@ class AssignTaskTests(SousChefsAPITestCase):
         self.assertEqual(len(tasks), 2)
 
     def test_user_2_marks_user_1_task_as_complete(self):
-        self.client.force_authenticate(user=self.user_2)
-        resp = self.client.patch(
+        self.api_client.force_authenticate(user=self.user_2)
+        resp = self.api_client.patch(
             reverse(
                 "my_app:my-task-detail",
                 kwargs=dict(
@@ -206,7 +204,7 @@ class AssignTaskTests(SousChefsAPITestCase):
         self.assertEqual(resp.status_code, 404)
 
 
-class AssignNextTaskTests(SousChefsAPITestCase):
+class AssignNextTaskTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
