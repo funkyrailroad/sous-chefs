@@ -297,6 +297,9 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
             )
         )
         self.assertEqual(resp.status_code, 200)
+        context = resp.context
+        group = context["group"]
+        self.assertIn(self.admin_user, group.user_set.all())
 
 
 class CookingSessionTests(SousChefsTestCase):
