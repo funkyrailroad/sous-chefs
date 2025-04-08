@@ -64,16 +64,19 @@ def create_cooking_session_view(request, recipe_id):
     context = {
         "recipe": recipe,
         "group": cooking_group,
+        "users": cooking_group.user_set.all(),
         "join_group_url": join_group_url,
     }
+    # breakpoint()
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
 
 
 @login_required
 def join_cooking_session_view(request, group_id):
     group = u.get_group(group_id)
+    recipe = u.get_recipe_from_group(group)
     u.add_user_to_group(request.user.id, group.id)
-    u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
+    u.get_next_task_for_user(request.user.id, recipe.id, group.id)
     context = {
         # "recipe": recipe,
         "group": group,

@@ -309,7 +309,6 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
             (u.get_currently_assigned_task(self.regular_user, self.recipe_id, group.id),)
 
         join_group_url = context["join_group_url"]
-        print(join_group_url)
 
         self.client.force_login(user=self.regular_user)
         resp = self.client.get(join_group_url)
@@ -318,8 +317,10 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
         self.assertIn(self.admin_user, group.user_set.all())
         self.assertIn(self.regular_user, group.user_set.all())
 
-        admin_task = self.assertTrue(u.get_currently_assigned_task(self.admin_user, self.recipe_id, group.id))
-        reg_task = self.assertTrue(u.get_currently_assigned_task(self.regular_user, self.recipe_id, group.id))
+        admin_task = u.get_currently_assigned_task(self.admin_user, self.recipe_id, group.id)
+        self.assertIsNotNone(admin_task)
+        reg_task = u.get_currently_assigned_task(self.regular_user, self.recipe_id, group.id)
+        self.assertIsNotNone(reg_task)
         self.assertNotEqual(admin_task, reg_task)
 
 
