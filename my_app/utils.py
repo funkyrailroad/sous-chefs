@@ -105,6 +105,7 @@ def get_first_unassigned_task(recipe_id: int, group_id: int) -> UserTask:
 
 
 def get_currently_assigned_task(
+    # might need handle when there is no currently assigned task
     user_id: int,
     recipe_id: int,
     group_id: int,

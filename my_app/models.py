@@ -11,6 +11,7 @@ class Recipe(models.Model):
         return f"{self.id} - {self.name}"
 
 
+# might rename this to RecipeStep or something, and then UserTask to Task
 class Task(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     description = models.TextField()
