@@ -1,3 +1,33 @@
 {% extends "my_app/base.html" %}
 {% block body %}
+
+
+<section class="section">
+  <h1 class="title">{{group.name}}</h1>
+</section>
+
+<section class="section">
+  <div class="columns">
+
+    <div class="column">
+      <h2 class="subtitle">
+        Users in group
+      </h2>
+
+      {% for user in users %}
+      <p>{{user}}</p>
+      {% endfor %}
+    </div>
+
+    <div class="column">
+      <h2 class="subtitle">
+        Join Session
+      </h2>
+      <a href={{join_group_url}}>{{join_group_url}}</p>
+    </div>
+
+  </div>
+</section>
+
+
 {% endblock %}
