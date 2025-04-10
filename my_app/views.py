@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.shortcuts import redirect
 from rest_framework import viewsets
 from rest_framework.response import Response
 import my_app.models as m
@@ -78,11 +79,7 @@ def join_cooking_session_view(request, group_id):
     recipe = u.get_recipe_from_group(group)
     u.add_user_to_group(request.user.id, group.id)
     u.get_next_task_for_user(request.user.id, recipe.id, group.id)
-    context = {
-        # "recipe": recipe,
-        "group": group,
-    }
-    return TemplateResponse(request, "my_app/join-cooking-session.html", context)
+    return redirect("my_app:my-tasks-view")
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):
