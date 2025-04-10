@@ -1,3 +1,5 @@
+from django.urls import reverse
+from django.shortcuts import redirect
 from rest_framework import viewsets
 from rest_framework.response import Response
 import my_app.models as m
@@ -6,6 +8,7 @@ import my_app.utils as u
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins
 
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.template.response import TemplateResponse
 from rest_framework.exceptions import ValidationError
@@ -19,11 +22,12 @@ def home(request):
     return TemplateResponse(request, "my_app/home.html", {})
 
 
-def get_tasks_for_user(user_id):
-    tasks = m.UserTask.objects.filter(user=user_id)
-    return tasks
+def get_tasks_for_user(user_id: int) -> m.UserTask:
+    usertasks = m.UserTask.objects.filter(user=user_id)
+    return usertasks
 
 
+@login_required
 def my_tasks_view(request):
     my_tasks = get_tasks_for_user(request.user.id)
     context = {"my_tasks": my_tasks}
@@ -43,17 +47,39 @@ def recipes_detail_view(request, recipe_id):
     return TemplateResponse(request, "my_app/recipe-detail-view.html", context)
 
 
+@login_required
+# Could make sense if this is for admins only
 def create_cooking_session_view(request, recipe_id):
-    # NOTE: unfinished
-    # group id
     recipe = u.get_recipe(recipe_id)
-    u.initialize_user_tasks(recipe_id)
+
+    cooking_group_name = f"Cook {recipe.name} with {request.user.username}"
+    cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
+    u.add_user_to_group(request.user.id, cooking_group.id)
+    u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
+
     # return a url (eventually QR code) that other people can go to to join
-    # endpoint = request.build_absolute_uri()
+    join_group_url = request.build_absolute_uri(
+        reverse("my_app:join-cooking-session", args=[cooking_group.id])
+    )
 
     # return current users in group
-    context = {"recipe": recipe}
+    context = {
+        "recipe": recipe,
+        "group": cooking_group,
+        "users": cooking_group.user_set.all(),
+        "join_group_url": join_group_url,
+    }
+    # breakpoint()
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
+
+
+@login_required
+def join_cooking_session_view(request, group_id):
+    group = u.get_group(group_id)
+    recipe = u.get_recipe_from_group(group)
+    u.add_user_to_group(request.user.id, group.id)
+    u.get_next_task_for_user(request.user.id, recipe.id, group.id)
+    return redirect("my_app:my-tasks-view")
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -119,7 +145,9 @@ class MyTaskViewSet(UpdateListRetrieveViewSet):
                 # Assign a new task to the user
                 try:
                     u.get_next_task_for_user(
-                        request.user.id, serializer.instance.task.recipe_id, instance.group.id
+                        request.user.id,
+                        serializer.instance.task.recipe_id,
+                        instance.group.id,
                     )
                 except Exception as e:
                     # If anything goes wrong while assigning a new task, raise an error

@@ -1,4 +1,5 @@
-from rest_framework.test import APITestCase
+from django.test import TestCase
+from rest_framework.test import APIClient
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -45,20 +46,22 @@ def create_admin_test_users(n_users: int) -> list[User]:
     return users
 
 
-class SousChefsBaseTestCase(APITestCase):
+class SousChefsTestCase(TestCase):
+    api_client = APIClient()
+
     def list_user_tasks(self, user):
-        self.client.force_authenticate(user=user)
-        resp = self.client.get(reverse("my_app:my-task-list"))
+        self.api_client.force_authenticate(user=user)
+        resp = self.api_client.get(reverse("my_app:my-task-list"))
         self.assertEqual(resp.status_code, 200)
         return resp.json()
 
 
-def create_test_cooking_group(name: str | None = "Test cooking group") -> Group:
-    group = Group.objects.create(name=name)
+def create_test_cooking_group() -> Group:
+    group = u.create_cooking_group("Test cooking group")
     return group
 
 
-class UserTaskTests(APITestCase):
+class UserTaskTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -67,14 +70,14 @@ class UserTaskTests(APITestCase):
         cls.cooking_group = create_test_cooking_group()
 
     def test_list_recipes(self):
-        self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("my_app:recipe-list"))
+        self.api_client.force_authenticate(user=self.admin_user)
+        resp = self.api_client.get(reverse("my_app:recipe-list"))
         self.assertEqual(resp.status_code, 200)
 
     def test_detail_recipe(self):
-        self.client.force_authenticate(user=self.admin_user)
+        self.api_client.force_authenticate(user=self.admin_user)
         recipe = Recipe.objects.first()
-        resp = self.client.get(
+        resp = self.api_client.get(
             reverse(
                 "my_app:recipe-detail",
                 kwargs=dict(
@@ -85,9 +88,9 @@ class UserTaskTests(APITestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_list_recipe_tasks(self):
-        self.client.force_authenticate(user=self.admin_user)
+        self.api_client.force_authenticate(user=self.admin_user)
         recipe = Recipe.objects.first()
-        resp = self.client.get(
+        resp = self.api_client.get(
             reverse(
                 "my_app:recipe-tasks-list",
                 kwargs=dict(
@@ -109,12 +112,12 @@ class UserTaskTests(APITestCase):
                 )
             )
         UserTask.objects.bulk_create(user_task_objs)
-        self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("my_app:user-task-list"))
+        self.api_client.force_authenticate(user=self.admin_user)
+        resp = self.api_client.get(reverse("my_app:user-task-list"))
         self.assertEqual(resp.status_code, 200)
 
 
-class AssignTaskTests(SousChefsBaseTestCase):
+class AssignTaskTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -126,7 +129,9 @@ class AssignTaskTests(SousChefsBaseTestCase):
         cls.admin_user = create_admin_test_users(1)[0]
         cls.cooking_group = create_test_cooking_group()
 
-        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id, cls.cooking_group.id)
+        cls.user_task_objs = u.initialize_user_tasks(
+            cls.recipe_id, cls.cooking_group.id
+        )
 
         for ind, user in enumerate(cls.users):
             user_task = cls.user_task_objs[ind]
@@ -139,23 +144,23 @@ class AssignTaskTests(SousChefsBaseTestCase):
 
     def test_all_users_see_an_active_task(self):
         for user in self.users:
-            self.client.force_authenticate(user=user)
-            resp = self.client.get(reverse("my_app:my-task-list"))
+            self.api_client.force_authenticate(user=user)
+            resp = self.api_client.get(reverse("my_app:my-task-list"))
             self.assertEqual(resp.status_code, 200)
             data = resp.json()
             self.assertGreater(len(data), 0, data)
             self.assertEqual(data[0]["status"], UserTask.TaskStatus.ACTIVE)
 
     def test_see_all_tasks(self):
-        self.client.force_authenticate(user=self.admin_user)
-        resp = self.client.get(reverse("my_app:user-task-list"))
+        self.api_client.force_authenticate(user=self.admin_user)
+        resp = self.api_client.get(reverse("my_app:user-task-list"))
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertEqual(len(data), len(self.user_task_objs))
 
     def test_user_1_gets_my_task_detail(self):
-        self.client.force_authenticate(user=self.user_1)
-        resp = self.client.get(
+        self.api_client.force_authenticate(user=self.user_1)
+        resp = self.api_client.get(
             reverse(
                 "my_app:my-task-detail",
                 kwargs=dict(
@@ -166,8 +171,8 @@ class AssignTaskTests(SousChefsBaseTestCase):
         self.assertEqual(resp.status_code, 200)
 
     def test_user_1_marks_user_1_task_as_complete(self):
-        self.client.force_authenticate(user=self.user_1)
-        resp = self.client.patch(
+        self.api_client.force_authenticate(user=self.user_1)
+        resp = self.api_client.patch(
             reverse(
                 "my_app:my-task-detail",
                 kwargs=dict(
@@ -186,8 +191,8 @@ class AssignTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 2)
 
     def test_user_2_marks_user_1_task_as_complete(self):
-        self.client.force_authenticate(user=self.user_2)
-        resp = self.client.patch(
+        self.api_client.force_authenticate(user=self.user_2)
+        resp = self.api_client.patch(
             reverse(
                 "my_app:my-task-detail",
                 kwargs=dict(
@@ -199,7 +204,7 @@ class AssignTaskTests(SousChefsBaseTestCase):
         self.assertEqual(resp.status_code, 404)
 
 
-class AssignNextTaskTests(SousChefsBaseTestCase):
+class AssignNextTaskTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
         recipe = create_test_recipe()
@@ -209,7 +214,9 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         cls.admin_user = create_admin_test_users(1)[0]
         cls.cooking_group = create_test_cooking_group()
 
-        cls.user_task_objs = u.initialize_user_tasks(cls.recipe_id, cls.cooking_group.id)
+        cls.user_task_objs = u.initialize_user_tasks(
+            cls.recipe_id, cls.cooking_group.id
+        )
 
     def test_with_previously_assigned_task_completed(self):
         # verify no assigned tasks
@@ -217,13 +224,17 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as completed
-        first_unassigned_task = u.get_first_unassigned_task(self.recipe_id, self.cooking_group.id)
+        first_unassigned_task = u.get_first_unassigned_task(
+            self.recipe_id, self.cooking_group.id
+        )
         first_unassigned_task.user = self.user
         first_unassigned_task.status = UserTask.TaskStatus.COMPLETED
         first_unassigned_task.save()
 
         # run function
-        task = u.get_next_task_for_user(self.user_id, self.recipe_id, self.cooking_group.id)
+        task = u.get_next_task_for_user(
+            self.user_id, self.recipe_id, self.cooking_group.id
+        )
         self.assertEqual(task.user, self.user)
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
@@ -247,13 +258,17 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as active
-        first_unassigned_task = u.get_first_unassigned_task(self.recipe_id, self.cooking_group.id)
+        first_unassigned_task = u.get_first_unassigned_task(
+            self.recipe_id, self.cooking_group.id
+        )
         first_unassigned_task.user = self.user
         first_unassigned_task.status = UserTask.TaskStatus.ACTIVE
         first_unassigned_task.save()
 
         # run function
-        task = u.get_next_task_for_user(self.user_id, self.recipe_id, self.cooking_group.id)
+        task = u.get_next_task_for_user(
+            self.user_id, self.recipe_id, self.cooking_group.id
+        )
         self.assertEqual(task.user, self.user)
         self.assertEqual(task.status, UserTask.TaskStatus.ACTIVE)
 
@@ -262,7 +277,64 @@ class AssignNextTaskTests(SousChefsBaseTestCase):
         self.assertEqual(len(tasks), 1)
 
 
-class CookingSessionTests(SousChefsBaseTestCase):
+class CreateCookingSessionViewTests(SousChefsTestCase):
+    @classmethod
+    def setUp(cls):
+        recipe = create_test_recipe()
+        cls.recipe_id = recipe.id
+        cls.admin_user = create_admin_test_users(1)[0]
+        cls.regular_user = create_regular_test_users(1)[0]
+
+    def test_get_create_cooking_session_view(self):
+        self.client.force_login(user=self.admin_user)
+        resp = self.client.get(
+            reverse(
+                "my_app:create-cooking-session",
+                kwargs=dict(
+                    recipe_id=self.recipe_id,
+                ),
+            )
+        )
+        self.assertEqual(resp.status_code, 200)
+        context = resp.context
+        group = context["group"]
+        self.assertIn(self.admin_user, group.user_set.all())
+        self.assertNotIn(self.regular_user, group.user_set.all())
+
+        # admin has a task
+        self.assertTrue(
+            u.get_currently_assigned_task(self.admin_user, self.recipe_id, group.id)
+        )
+
+        # regular user does not have a task
+        with self.assertRaises(UserTask.DoesNotExist):
+            (
+                u.get_currently_assigned_task(
+                    self.regular_user, self.recipe_id, group.id
+                ),
+            )
+
+        join_group_url = context["join_group_url"]
+
+        self.client.force_login(user=self.regular_user)
+        resp = self.client.get(join_group_url)
+        context = resp.context
+        group = context["group"]
+        self.assertIn(self.admin_user, group.user_set.all())
+        self.assertIn(self.regular_user, group.user_set.all())
+
+        admin_task = u.get_currently_assigned_task(
+            self.admin_user, self.recipe_id, group.id
+        )
+        self.assertIsNotNone(admin_task)
+        reg_task = u.get_currently_assigned_task(
+            self.regular_user, self.recipe_id, group.id
+        )
+        self.assertIsNotNone(reg_task)
+        self.assertNotEqual(admin_task, reg_task)
+
+
+class CookingSessionTests(SousChefsTestCase):
     """
     - Create a cooking session with admin user
     - add a non admin user to the cooking session
@@ -325,31 +397,62 @@ class CookingSessionTests(SousChefsBaseTestCase):
 
         cls.recipe = create_test_recipe()
 
-        group_1_user_task_objs = u.initialize_user_tasks(cls.recipe.id, cls.cooking_group_1.id)
+        group_1_user_task_objs = u.initialize_user_tasks(
+            cls.recipe.id, cls.cooking_group_1.id
+        )
         u.assign_initial_tasks_to_users(group_1_users, group_1_user_task_objs)
 
-        group_2_user_task_objs = u.initialize_user_tasks(cls.recipe.id, cls.cooking_group_2.id)
+        group_2_user_task_objs = u.initialize_user_tasks(
+            cls.recipe.id, cls.cooking_group_2.id
+        )
         u.assign_initial_tasks_to_users(group_2_users, group_2_user_task_objs)
 
     def test_create_cooking_session(self):
         admin1 = self.admin_user_1
         user_1a = self.regular_user_1a
         user_1b = self.regular_user_1b
-        ut_1 = u.get_next_task_for_user(admin1.id, self.recipe.id, self.cooking_group_1.id)
-        ut_2 = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
-        ut_3 = u.get_next_task_for_user(user_1b.id, self.recipe.id, self.cooking_group_1.id)
+        ut_1 = u.get_next_task_for_user(
+            admin1.id, self.recipe.id, self.cooking_group_1.id
+        )
+        ut_2 = u.get_next_task_for_user(
+            user_1a.id, self.recipe.id, self.cooking_group_1.id
+        )
+        ut_3 = u.get_next_task_for_user(
+            user_1b.id, self.recipe.id, self.cooking_group_1.id
+        )
 
         u.mark_task_complete(ut_1)
         self.assertEqual(ut_1.status, UserTask.TaskStatus.COMPLETED)
 
-        next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
+        next_task = u.get_next_task_for_user(
+            user_1a.id, self.recipe.id, self.cooking_group_1.id
+        )
         task_count = 3
         while next_task:
             u.mark_task_complete(next_task)
             try:
-                next_task = u.get_next_task_for_user(user_1a.id, self.recipe.id, self.cooking_group_1.id)
+                next_task = u.get_next_task_for_user(
+                    user_1a.id, self.recipe.id, self.cooking_group_1.id
+                )
                 task_count += 1
             except u.AllUserTasksAssigned:
                 break
 
         self.assertEqual(task_count, len(self.recipe.task_set.all()))
+
+    def test_initialize_cooking_session_doubly(self):
+        """Ensure there's no error."""
+        cooking_group_name = (
+            f"Cook {self.recipe.name} with {self.admin_user_1.username}"
+        )
+
+        u.initialize_cooking_session(cooking_group_name, self.recipe.id)
+
+        u.initialize_cooking_session(cooking_group_name, self.recipe.id)
+
+    def test_2(self):
+        # Additional testing ideas:
+        # start to see if the tasks from the second group are still available.
+        # make sure all assigned tasks are assigned in order that the recipe gives
+        # make sure the number of assigned tasks equuals the number of tasks in the recipe
+        pass
