@@ -318,8 +318,7 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
 
         self.client.force_login(user=self.regular_user)
         resp = self.client.get(join_group_url)
-        context = resp.context
-        group = context["group"]
+        group.refresh_from_db()
         self.assertIn(self.admin_user, group.user_set.all())
         self.assertIn(self.regular_user, group.user_set.all())
 
