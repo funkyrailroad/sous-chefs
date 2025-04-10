@@ -26,6 +26,7 @@ def get_tasks_for_user(user_id):
     return tasks
 
 
+@login_required
 def my_tasks_view(request):
     my_tasks = get_tasks_for_user(request.user.id)
     context = {"my_tasks": my_tasks}
