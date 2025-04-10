@@ -23,8 +23,10 @@ def assign_initial_tasks_to_users(
 def get_recipe(recipe_id: int) -> Recipe:
     return Recipe.objects.get(id=recipe_id)
 
+
 def get_recipe_from_group(group: Group) -> Recipe:
     return group.usertask_set.first().task.recipe
+
 
 def get_user(user_id: int) -> User:
     return User.objects.get(id=user_id)
