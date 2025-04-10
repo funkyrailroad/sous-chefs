@@ -21,9 +21,9 @@ def home(request):
     return TemplateResponse(request, "my_app/home.html", {})
 
 
-def get_tasks_for_user(user_id):
-    tasks = m.UserTask.objects.filter(user=user_id)
-    return tasks
+def get_tasks_for_user(user_id: int) -> m.UserTask:
+    usertasks = m.UserTask.objects.filter(user=user_id)
+    return usertasks
 
 
 @login_required
