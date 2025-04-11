@@ -104,7 +104,10 @@ def join_cooking_session_view(request, group_id):
     group = u.get_group(group_id)
     recipe = u.get_recipe_from_group(group)
     u.add_user_to_group(request.user.id, group.id)
-    u.get_next_task_for_user(request.user.id, recipe.id, group.id)
+    try:
+        u.get_next_task_for_user(request.user.id, recipe.id, group.id)
+    except u.AllUserTasksAssigned:
+        pass
     return redirect("my_app:my-tasks-view")
 
 
