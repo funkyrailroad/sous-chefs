@@ -1,6 +1,6 @@
-from django.urls import reverse
+import io
 from django.shortcuts import redirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework import viewsets
 from rest_framework.response import Response
 import my_app.models as m
@@ -8,6 +8,7 @@ import my_app.serializers as s
 import my_app.utils as u
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins
+import pyqrcode
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -178,3 +179,22 @@ class MyTaskViewSet(UpdateListRetrieveViewSet):
 
         # Return the updated instance as the response
         return Response(serializer.data)
+
+
+# probably want to cache this at some point
+# most performant option is to have the qr code generated on the frontend
+# https://chatgpt.com/c/67f94481-a37c-8010-aea4-6788d6a2b28c
+# @login_required
+def get_cooking_session_qr_code(request, cooking_session_id):
+    # logged in user needs to be a member of the cooking session!
+    group = u.get_group(cooking_session_id)
+    if request.user not in group.user_set.all():
+        return HttpResponseForbidden()
+
+    endpoint = u.create_cooking_session_join_url(request, cooking_session_id)
+    qr_code = pyqrcode.create(endpoint)
+    buffer = io.BytesIO()
+    qr_code.svg(buffer, scale=12)
+    svg_data = buffer.getvalue()
+    buffer.close()
+    return HttpResponse(svg_data, content_type="image/svg+xml")

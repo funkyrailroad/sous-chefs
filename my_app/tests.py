@@ -512,3 +512,44 @@ class MyTasksTests(SousChefsTestCase):
         self.assertEqual(len(my_completed_tasks), 1)
         my_completed_task = my_completed_tasks[0]
         self.assertEqual(my_completed_task.status, UserTask.TaskStatus.COMPLETED)
+
+
+class JoinCookingSessionQRCodeViewTests(SousChefsTestCase):
+    @classmethod
+    def setUp(cls):
+        # have a valid cooking session
+        cls.cooking_session = Group.objects.create(name="Test cooking session")
+        cls.admin = create_admin_test_users(1)[0]
+        cls.user = create_regular_test_users(1)[0]
+
+        # have admin in that group
+        u.add_user_to_group(cls.admin.id, cls.cooking_session.id)
+
+    def test_with_user_in_session(self):
+        self.client.force_login(self.admin)
+        resp = self.client.get(
+            reverse(
+                "my_app:join-cooking-session-qr-code",
+                kwargs={"cooking_session_id": self.cooking_session.id},
+            ),
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_anon_user(self):
+        resp = self.client.get(
+            reverse(
+                "my_app:join-cooking-session-qr-code",
+                kwargs={"cooking_session_id": self.cooking_session.id},
+            ),
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_with_user_not_in_session(self):
+        self.client.force_login(self.user)
+        resp = self.client.get(
+            reverse(
+                "my_app:join-cooking-session-qr-code",
+                kwargs={"cooking_session_id": self.cooking_session.id},
+            ),
+        )
+        self.assertEqual(resp.status_code, 403)
