@@ -2,9 +2,8 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 
-from my_app.models import Recipe, Task, UserTask
+from my_app.models import Recipe, Task, UserTask, Group
 from my_app.data import test_recipe
 import my_app.utils as u
 
@@ -455,3 +454,59 @@ class CookingSessionTests(SousChefsTestCase):
         # make sure all assigned tasks are assigned in order that the recipe gives
         # make sure the number of assigned tasks equuals the number of tasks in the recipe
         pass
+
+
+class MyTasksTests(SousChefsTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # be a user
+        cls.user = create_regular_test_users(1)[0]
+
+        # have a task assigned to me
+        recipe = Recipe.objects.create(name="Test recipe")
+        task_1 = Task.objects.create(
+            recipe_id=recipe.id,
+            description="Test task 1",
+        )
+        task_2 = Task.objects.create(
+            recipe_id=recipe.id,
+            description="Test task 2",
+        )
+        group = Group.objects.create(name="Test group")
+        u.add_user_to_group(cls.user.id, group.id)
+        usertask1 = UserTask.objects.create(
+            user=cls.user,
+            task=task_1,
+            group=group,
+            status=UserTask.TaskStatus.ACTIVE,
+        )
+        usertask2 = UserTask.objects.create(
+            # user=cls.user,
+            task=task_2,
+            group=group,
+            status=UserTask.TaskStatus.UPCOMING,
+        )
+
+    def test_mark_task_complete(self):
+        # call my tasks endpoint, see it
+        self.client.force_login(user=self.user)
+        resp = self.client.get(reverse("my_app:my-tasks-view"))
+        my_tasks = resp.context["my_tasks"]
+        self.assertEqual(len(my_tasks), 1)
+        my_task = my_tasks[0]
+
+        # it's assigned, but unfinished
+        self.assertEqual(my_task.status, UserTask.TaskStatus.ACTIVE)
+        self.assertEqual(my_task.user, self.user)
+
+        # call complete_task endpoint
+        resp = self.client.post(
+            reverse("my_app:complete-user-task", kwargs={"usertask_id": my_task.id}),
+            follow=True,
+        )
+        context = resp.context
+        my_tasks = context["my_tasks"]
+        # get response, see I have another task
+        self.assertEqual(len(my_tasks), 2)
+        my_task = my_tasks[1] # grab second task
+        self.assertEqual(my_task.status, UserTask.TaskStatus.COMPLETED)

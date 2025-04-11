@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.shortcuts import redirect
+from django.http import HttpResponseForbidden
 from rest_framework import viewsets
 from rest_framework.response import Response
 import my_app.models as m
@@ -30,8 +31,32 @@ def get_tasks_for_user(user_id: int) -> m.UserTask:
 @login_required
 def my_tasks_view(request):
     my_tasks = get_tasks_for_user(request.user.id)
-    context = {"my_tasks": my_tasks}
+    my_tasks = my_tasks.order_by("-task__id")
+    my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
+    my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
+    context = {
+        "my_active_tasks": my_active_tasks,
+        "my_completed_tasks": my_completed_tasks,
+    }
     return TemplateResponse(request, "my_app/my-tasks-view.html", context)
+
+
+@login_required
+def complete_user_task(request, usertask_id):
+    if request.method == "POST":
+        user_task = m.UserTask.objects.get(id=usertask_id)
+        user_task.status = m.UserTask.TaskStatus.COMPLETED
+        user_task.save()
+        cooking_group = user_task.group
+        recipe = u.get_recipe_from_user_task(user_task)
+        try:
+            u.get_next_task_for_user(request.user.id, recipe.id, cooking_group.id)
+        except u.AllUserTasksAssigned:
+            # potentially could return something saying you've completed the
+            # recipe!
+            pass
+        return redirect("my_app:my-tasks-view")
+    return HttpResponseForbidden()
 
 
 def recipes_list_view(request):
