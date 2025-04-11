@@ -1,7 +1,26 @@
 {% extends "my_app/base.html" %}
 {% block body %}
+
   <h1 class="title is-3">My tasks</h1>
-  {% for task in my_tasks %}
-    <p>{{task.task.description}}</p>
-   {% endfor %}
+
+  {% for task in my_active_tasks %}
+    <div>
+      {{ task.task.description }}
+      <form action="{% url 'my_app:complete-user-task' task.id %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button is-small is-success">
+          Mark as complete
+        </button>
+      </form>
+    </div>
+  {% endfor %}
+
+  {% for task in my_completed_tasks %}
+    <div>
+      <p>
+        <s>{{ task.task.description }}</s> ✅
+      </p>
+    </div>
+  {% endfor %}
+
 {% endblock %}

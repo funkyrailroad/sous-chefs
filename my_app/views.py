@@ -32,7 +32,12 @@ def get_tasks_for_user(user_id: int) -> m.UserTask:
 def my_tasks_view(request):
     my_tasks = get_tasks_for_user(request.user.id)
     my_tasks = my_tasks.order_by("-task__id")
-    context = {"my_tasks": my_tasks}
+    my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
+    my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
+    context = {
+        "my_active_tasks": my_active_tasks,
+        "my_completed_tasks": my_completed_tasks,
+    }
     return TemplateResponse(request, "my_app/my-tasks-view.html", context)
 
 
