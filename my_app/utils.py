@@ -28,6 +28,10 @@ def get_recipe_from_group(group: Group) -> Recipe:
     return group.usertask_set.first().task.recipe
 
 
+def get_recipe_from_user_task(usertask: UserTask) -> Recipe:
+    return usertask.task.recipe
+
+
 def get_user(user_id: int) -> User:
     return User.objects.get(id=user_id)
 
