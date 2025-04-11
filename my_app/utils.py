@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from my_app.models import Task, UserTask, Recipe
@@ -123,3 +124,9 @@ def get_currently_assigned_task(
 def mark_task_complete(usertask: UserTask) -> None:
     usertask.status = UserTask.TaskStatus.COMPLETED
     usertask.save()
+
+
+def create_cooking_session_join_url(request, cooking_session_id):
+    return request.build_absolute_uri(
+        reverse("my_app:join-cooking-session", args=[cooking_session_id])
+    )

@@ -83,9 +83,7 @@ def create_cooking_session_view(request, recipe_id):
     u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
 
     # return a url (eventually QR code) that other people can go to to join
-    join_group_url = request.build_absolute_uri(
-        reverse("my_app:join-cooking-session", args=[cooking_group.id])
-    )
+    join_group_url = u.create_cooking_session_join_url(request, cooking_group.id)
 
     # return current users in group
     context = {
