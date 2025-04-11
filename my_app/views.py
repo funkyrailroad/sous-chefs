@@ -35,7 +35,9 @@ def my_tasks_view(request):
     my_tasks = my_tasks.order_by("-task__id")
     my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
     my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
+    group_id = my_tasks.first().group.id
     context = {
+        "group_id": group_id,
         "my_active_tasks": my_active_tasks,
         "my_completed_tasks": my_completed_tasks,
     }
