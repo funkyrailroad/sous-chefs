@@ -491,22 +491,24 @@ class MyTasksTests(SousChefsTestCase):
         # call my tasks endpoint, see it
         self.client.force_login(user=self.user)
         resp = self.client.get(reverse("my_app:my-tasks-view"))
-        my_tasks = resp.context["my_tasks"]
-        self.assertEqual(len(my_tasks), 1)
-        my_task = my_tasks[0]
+        my_active_tasks = resp.context["my_active_tasks"]
+        self.assertEqual(len(my_active_tasks), 1)
+        my_active_task = my_active_tasks[0]
 
         # it's assigned, but unfinished
-        self.assertEqual(my_task.status, UserTask.TaskStatus.ACTIVE)
-        self.assertEqual(my_task.user, self.user)
+        self.assertEqual(my_active_task.status, UserTask.TaskStatus.ACTIVE)
+        self.assertEqual(my_active_task.user, self.user)
 
         # call complete_task endpoint
         resp = self.client.post(
-            reverse("my_app:complete-user-task", kwargs={"usertask_id": my_task.id}),
+            reverse(
+                "my_app:complete-user-task", kwargs={"usertask_id": my_active_task.id}
+            ),
             follow=True,
         )
         context = resp.context
-        my_tasks = context["my_tasks"]
+        my_completed_tasks = context["my_completed_tasks"]
         # get response, see I have another task
-        self.assertEqual(len(my_tasks), 2)
-        my_task = my_tasks[1] # grab second task
-        self.assertEqual(my_task.status, UserTask.TaskStatus.COMPLETED)
+        self.assertEqual(len(my_completed_tasks), 1)
+        my_completed_task = my_completed_tasks[0]
+        self.assertEqual(my_completed_task.status, UserTask.TaskStatus.COMPLETED)
