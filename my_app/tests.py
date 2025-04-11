@@ -2,9 +2,8 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 
-from my_app.models import Recipe, Task, UserTask
+from my_app.models import Recipe, Task, UserTask, Group
 from my_app.data import test_recipe
 import my_app.utils as u
 
