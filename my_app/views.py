@@ -98,7 +98,6 @@ def create_cooking_session_view(request, recipe_id):
         "users": cooking_group.user_set.all(),
         "join_group_url": join_group_url,
     }
-    # breakpoint()
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
 
 
