@@ -83,7 +83,10 @@ def create_cooking_session_view(request, recipe_id):
     cooking_group_name = f"Cook {recipe.name} with {request.user.username}"
     cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
     u.add_user_to_group(request.user.id, cooking_group.id)
-    u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
+    try:
+        u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
+    except u.AllUserTasksAssigned:
+        pass
 
     # return a url (eventually QR code) that other people can go to to join
     join_group_url = u.create_cooking_session_join_url(request, cooking_group.id)
