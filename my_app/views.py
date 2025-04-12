@@ -1,6 +1,6 @@
-from django.urls import reverse
+import io
 from django.shortcuts import redirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework import viewsets
 from rest_framework.response import Response
 import my_app.models as m
@@ -8,6 +8,7 @@ import my_app.serializers as s
 import my_app.utils as u
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import mixins
+import pyqrcode
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -34,7 +35,9 @@ def my_tasks_view(request):
     my_tasks = my_tasks.order_by("-task__id")
     my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
     my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
+    group_id = my_tasks.first().group.id
     context = {
+        "group_id": group_id,
         "my_active_tasks": my_active_tasks,
         "my_completed_tasks": my_completed_tasks,
     }
@@ -80,12 +83,13 @@ def create_cooking_session_view(request, recipe_id):
     cooking_group_name = f"Cook {recipe.name} with {request.user.username}"
     cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
     u.add_user_to_group(request.user.id, cooking_group.id)
-    u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
+    try:
+        u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
+    except u.AllUserTasksAssigned:
+        pass
 
     # return a url (eventually QR code) that other people can go to to join
-    join_group_url = request.build_absolute_uri(
-        reverse("my_app:join-cooking-session", args=[cooking_group.id])
-    )
+    join_group_url = u.create_cooking_session_join_url(request, cooking_group.id)
 
     # return current users in group
     context = {
@@ -94,7 +98,6 @@ def create_cooking_session_view(request, recipe_id):
         "users": cooking_group.user_set.all(),
         "join_group_url": join_group_url,
     }
-    # breakpoint()
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
 
 
@@ -103,7 +106,10 @@ def join_cooking_session_view(request, group_id):
     group = u.get_group(group_id)
     recipe = u.get_recipe_from_group(group)
     u.add_user_to_group(request.user.id, group.id)
-    u.get_next_task_for_user(request.user.id, recipe.id, group.id)
+    try:
+        u.get_next_task_for_user(request.user.id, recipe.id, group.id)
+    except u.AllUserTasksAssigned:
+        pass
     return redirect("my_app:my-tasks-view")
 
 
@@ -180,3 +186,22 @@ class MyTaskViewSet(UpdateListRetrieveViewSet):
 
         # Return the updated instance as the response
         return Response(serializer.data)
+
+
+# probably want to cache this at some point
+# most performant option is to have the qr code generated on the frontend
+# https://chatgpt.com/c/67f94481-a37c-8010-aea4-6788d6a2b28c
+# @login_required
+def get_cooking_session_qr_code(request, cooking_session_id):
+    # logged in user needs to be a member of the cooking session!
+    group = u.get_group(cooking_session_id)
+    if request.user not in group.user_set.all():
+        return HttpResponseForbidden()
+
+    endpoint = u.create_cooking_session_join_url(request, cooking_session_id)
+    qr_code = pyqrcode.create(endpoint)
+    buffer = io.BytesIO()
+    qr_code.svg(buffer, scale=12)
+    svg_data = buffer.getvalue()
+    buffer.close()
+    return HttpResponse(svg_data, content_type="image/svg+xml")

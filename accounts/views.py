@@ -5,6 +5,8 @@ from django.contrib import messages
 
 
 def user_login(request):
+    next_url = request.GET.get("next", "my_app:home")
+
     if request.method == "POST":
         email = request.POST["email"]
         password = request.POST["password"]
@@ -14,11 +16,11 @@ def user_login(request):
         if user is not None:
             login(request, user)
             messages.success(request, "You are now logged in.")
-            return redirect("my_app:home")
+            return redirect(request.POST.get("next", next_url))
         else:
             messages.error(request, "Invalid email or password.")
 
-    return render(request, "accounts/login.html")
+    return render(request, "accounts/login.html", {"next": next_url})
 
 
 def user_logout(request):
