@@ -1,18 +1,29 @@
+{% extends "my_app/base.html" %}
+{% block body %}
+
 {% if messages %}
     {% for message in messages %}
         <p>{{ message }}</p>
     {% endfor %}
 {% endif %}
 
-<form method="post">
+<form class="control" method="post">
     {% csrf_token %}
-    <label for="email">Email:</label>
-    <input type="email" name="email" required>
 
-    <label for="password">Password:</label>
-    <input type="password" name="password" required>
+    <div class="block">
+      <label for="email">Email:</label>
+      <input class="input" type="email" name="email" required>
+    </div>
+
+    <div class="block">
+      <label for="password">Password:</label>
+      <input class="input" type="password" name="password" required>
+    </div>
 
     <input type="hidden" name="next" value="{{ next }}">
 
-    <button type="submit">Login</button>
+    <div class="block">
+      <button class="button is-primary" type="submit">Login</button>
+    </div>
 </form>
+{% endblock %}
