@@ -22,8 +22,15 @@
 
     <input type="hidden" name="next" value="{{ next }}">
 
-    <div class="block">
-      <button class="button is-primary" type="submit">Login</button>
+    <div class="field is-grouped">
+      <p class="control">
+        <button class="button is-primary" type="submit">Login</button>
+      </p>
+
+      <p class="control">
+        <a class="button is-light" href="{% url 'register' %}">Register</a>
+      </p>
     </div>
+
 </form>
 {% endblock %}
