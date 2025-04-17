@@ -23,10 +23,13 @@ def create_test_recipe() -> Recipe:
 def create_regular_test_users(n_users: int) -> list[User]:
     users = []
     for i in range(1, n_users + 1):
-        username = f"regular_user_{i}"
+        first_name = f"Regular {i}"
+        last_name = f"User {i}"
+        email_prefix = f"{first_name.lower()}_{last_name.lower()}"
         user = User.objects.create(
-            username=username,
-            email=f"{username}@example.com",
+            email=f"{email_prefix}@example.com",
+            first_name=first_name,
+            last_name=last_name,
         )
         users.append(user)
     return users
@@ -35,10 +38,13 @@ def create_regular_test_users(n_users: int) -> list[User]:
 def create_admin_test_users(n_users: int) -> list[User]:
     users = []
     for i in range(1, n_users + 1):
-        username = f"admin_user_{i}"
+        first_name = f"Admin {i}"
+        last_name = f"User {i}"
+        email_prefix = f"{first_name.lower()}_{last_name.lower()}"
         user = User.objects.create(
-            username=username,
-            email=f"{username}@example.com",
+            email=f"{email_prefix}@example.com",
+            first_name=first_name,
+            last_name=last_name,
             is_staff=True,
         )
         users.append(user)
@@ -377,10 +383,10 @@ class CookingSessionTests(SousChefsTestCase):
         cls.regular_user_2a = regular_users[2]
         cls.regular_user_2b = regular_users[3]
 
-        group_name_1 = f"{cls.admin_user_1.username}'s Cooking Session"
+        group_name_1 = f"{cls.admin_user_1.first_name}'s Cooking Session"
         cls.cooking_group_1 = Group.objects.create(name=group_name_1)
 
-        group_name_2 = f"{cls.admin_user_2.username}'s Cooking Session"
+        group_name_2 = f"{cls.admin_user_2.first_name}'s Cooking Session"
         cls.cooking_group_2 = Group.objects.create(name=group_name_2)
 
         u.add_user_to_group(cls.admin_user_1.id, cls.cooking_group_1.id)
@@ -441,7 +447,7 @@ class CookingSessionTests(SousChefsTestCase):
     def test_initialize_cooking_session_doubly(self):
         """Ensure there's no error."""
         cooking_group_name = (
-            f"Cook {self.recipe.name} with {self.admin_user_1.username}"
+            f"Cook {self.recipe.name} with {self.admin_user_1.first_name}"
         )
 
         u.initialize_cooking_session(cooking_group_name, self.recipe.id)
