@@ -106,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = [
     "accounts.auth_backends.EmailBackend",  # Custom email authentication
-    "django.contrib.auth.backends.ModelBackend",  # Default username-based authentication
+    # "django.contrib.auth.backends.ModelBackend",  # Default username-based authentication
 ]
 
 # REST Framework settings

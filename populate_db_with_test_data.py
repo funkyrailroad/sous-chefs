@@ -5,7 +5,8 @@ User = get_user_model()
 
 # Admin user
 user = User.objects.create_superuser(
-    username="myadmin",
+    first_name="Admin",
+    last_name="User",
     email="admin@example.com",
     password="mypassword",
 )
@@ -13,7 +14,8 @@ user.save()
 
 # Non-admin user
 user = User.objects.create_user(
-    username="myuser",
+    first_name="Regular",
+    last_name="User",
     email="user@example.com",
     password="mypassword",
 )
