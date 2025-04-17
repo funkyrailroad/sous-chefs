@@ -3,6 +3,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 
+from django.db import IntegrityError, transaction
+
+
 User = get_user_model()
 
 
@@ -44,9 +47,13 @@ def user_register(request):
             last_name=last_name,
         )
         user.set_password(password)  # Hash the password
-        user.save()
-        login(request, user)
-        return redirect(request.POST.get("next", next_url))
+        try:
+            with transaction.atomic():
+                user.save()
+                login(request, user)
+                return redirect(request.POST.get("next", next_url))
+        except IntegrityError:
+            messages.error(request, "A user with this email already exists.")
 
     return render(
         request,
