@@ -22,6 +22,19 @@ class UserTaskTests(TestCase):
                 last_name=self.last_name,
             )
 
+    def test_redirect_to_home_after_registration(self):
+        resp = self.client.post(
+            reverse("register"),
+            data=dict(
+                email=self.email,
+                password=self.password,
+                first_name=self.first_name,
+                last_name=self.last_name,
+            ),
+            follow=True
+        )
+        self.assertTemplateUsed(resp, "my_app/home.html")
+
     def test_user_exists_after_registration(self):
         self.client.post(
             reverse("register"),
