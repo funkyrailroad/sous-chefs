@@ -1,33 +1,61 @@
 x by default all endpoints must be admin
 . keep thinking of these user scenarios:
 / define the user scenarios for the minimum prototype
-    / I'm a user and I want to join a session to help cook
-        - scan a qr code
-            - join-cooking-group
-        - create an endpoint that automatically creates a user, logs them in,
-          and joins the group
-            - user needs to enter email address and first name
-        ! slightly different flow for if the user is already logged in
-        - be able to update your name
-        - get your first task
-        - join the group immediately
-    - I'm the host and I want to distribute tasks between two other users
-        - log in
-        x pick a recipe
-        x create a cooking group (automatically)
-        - invite two other users to join the recipe
-        - distribute tasks to everybody
     - I'm the host and I want to navigate to an existing cooking group I
       created
-    - I'm the host and I want to see who is in my cooking group
-        - cooking group detail view
-    - I'm the host and I want to set up a recipe for people to cook
-    - I'm a user and I want to see which tasks I have to complete
+        - see my group
     - I'm the host and I want to see who is responsible for each task
     - I'm a user and I want to see how I can complete my current task
-    - I'm a user and I want to mark my task as complete
-. be able to show users a qr code to join a cooking group
-    - create qr code from
+    - I'm a user and I want to update my user info
+        . be able to update your user info (email, first_name, last_name,
+          password)
+    x I'm the host and I want to see who is in my cooking group
+        - cooking group detail view
+    x I'm the host and I want to set up a recipe for people to cook
+    x I'm a user and I want to see which tasks I have to complete
+    x I'm a user and I want to mark my task as complete
+    x I'm a user and I want to join a session to help cook
+        x scan a qr code
+            - join-cooking-group
+        x create an endpoint that automatically creates a user, logs them in,
+          and joins the group
+            - user needs to enter email address and first name
+        x slightly different flow for if the user is already logged in
+        x get your first task
+        x join the group immediately
+    x I'm the host and I want to distribute tasks between two other users
+        x log in
+        x pick a recipe
+        x create a cooking group (automatically)
+        x invite two other users to join the recipe
+        x distribute tasks to everybody
+/ figure out that flow to have a user without an account to scan a qr code,
+  create an account, and get redirected to the my tasks page
+    x as admin, create cooking session
+    x scan a qr code as a non-logged in user
+    x get prompted to login
+    x click register
+        x I don't jump to the join cooking session page, that must have gotten
+          lost while going from the login page to the registration page
+    x see my tasks
+        x might have to use the "next" query parameter to redirect if it's
+          provided
+    . plan a test for this
+        - create a group
+        - create an admin
+        - as an unlogged in user, go to the join url
+x figure out the flow of having an unlogged in user with an account scan a qr
+  code, log in, and get redirected to the my tasks page
+. only allow paying customers to create cooking sessions
+    .
+. fix bug when use clicks my tasks without having been assigned a group or
+  task
+. don't error when a newly created user logs in and clicks my tasks
+    - options:
+        - only show the "my-tasks" link if user has tasks
+. be able to show another potential user a qr code from the my tasks list
+. be able to show another potential user a qr code from the cooking session
+  homepage
 . cook a whole recipe that I want to make myself
     ? tacos
     ? teriyaki chicken thighs and fried rice
@@ -54,6 +82,9 @@ x by default all endpoints must be admin
 . choose a recipe as a cooking group
 . see which tasks each user has completed
 . view ingredients list for a recipe
+. standardize naming convention between group, session, cooking_session,
+  cooking_group
+    - I like session because a group can persist over more than a session
 . allow users to create an account
 . view an equipment list for a recipe
 . use nginx and gunicorn for local hosting on a .local domain name
@@ -73,6 +104,30 @@ x by default all endpoints must be admin
     - I could do a one-to-many relationship between groups and user_tasks
         - One group can have many user_tasks
         - One user_task has exactly one group
+x handle user registration bugs (create tests)
+    x log user in and redirect to home after account is created
+    x be able to create multiple new users
+    x see when an email or username is already taken
+x be able to show users a qr code to join a cooking group
+    - create qr code from
+    - cache this view
+x fix bug when user creates session, but all the user tasks have been
+  completed
+x joining a session when all the tasks have been assigned and/or completed
+x figure out that flow to have a user with an account to scan a qr code, log
+  in, and get redirected to the my tasks page
+    - they will go to join page
+    - they will be redirect to login
+    - might want to set LOGIN_URL in settings to a custom view
+        - then I can intercept it
+        - and customize login page template
+x be able to register a new user
+    x create a view
+    x create a template
+        - email         (mandatory)
+        - username      (optional)
+        - first name    (mandatory)
+        - last name     (optional)
 x let someone mark their task as complete and get the next one
     ? would you like another task or to take a break? (requiring opting in
       will prevent the flow from being bogged down)
