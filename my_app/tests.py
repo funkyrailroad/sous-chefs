@@ -464,6 +464,11 @@ class CookingSessionTests(SousChefsTestCase):
         # make sure the number of assigned tasks equuals the number of tasks in the recipe
         pass
 
+    def test_get_my_cooking_session_view(self):
+        self.client.force_login(user=self.regular_user_1a)
+        resp = self.client.get(reverse("my_app:my-cooking-session-view"))
+        self.assertEqual(resp.status_code, 200)
+
 
 class MyTasksTests(SousChefsTestCase):
     @classmethod

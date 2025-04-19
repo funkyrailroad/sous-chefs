@@ -101,6 +101,25 @@ def create_cooking_session_view(request, recipe_id):
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
 
 
+def my_cooking_session_view(request):
+    user = request.user
+
+    # NOTE: this just grabs the first group, won't work for multiple groups
+    cooking_group = user.groups.first()
+
+    recipe = u.get_recipe_from_group(cooking_group)
+    join_group_url = u.create_cooking_session_join_url(request, cooking_group.id)
+
+    # return current users in group
+    context = {
+        "recipe": recipe,
+        "group": cooking_group,
+        "users": cooking_group.user_set.all(),
+        "join_group_url": join_group_url,
+    }
+    return TemplateResponse(request, "my_app/create-cooking-session.html", context)
+
+
 @login_required
 def join_cooking_session_view(request, group_id):
     group = u.get_group(group_id)
