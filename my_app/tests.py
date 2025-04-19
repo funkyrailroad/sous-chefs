@@ -285,8 +285,8 @@ class AssignNextTaskTests(SousChefsTestCase):
 class CreateCookingSessionViewTests(SousChefsTestCase):
     @classmethod
     def setUp(cls):
-        recipe = create_test_recipe()
-        cls.recipe_id = recipe.id
+        cls.recipe = create_test_recipe()
+        cls.recipe_id = cls.recipe.id
         cls.admin_user = create_admin_test_users(1)[0]
         cls.regular_user = create_regular_test_users(1)[0]
 
@@ -305,6 +305,9 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
         group = context["group"]
         self.assertIn(self.admin_user, group.user_set.all())
         self.assertNotIn(self.regular_user, group.user_set.all())
+
+        # Check name of group
+        self.assertEqual(group.name, f"Cook {self.recipe.name} with {self.admin_user.first_name}")
 
         # admin has a task
         self.assertTrue(

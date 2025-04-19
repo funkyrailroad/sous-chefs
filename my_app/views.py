@@ -80,7 +80,7 @@ def recipes_detail_view(request, recipe_id):
 def create_cooking_session_view(request, recipe_id):
     recipe = u.get_recipe(recipe_id)
 
-    cooking_group_name = f"Cook {recipe.name} with {request.user.username}"
+    cooking_group_name = f"Cook {recipe.name} with {request.user.first_name}"
     cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
     u.add_user_to_group(request.user.id, cooking_group.id)
     try:
