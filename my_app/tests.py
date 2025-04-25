@@ -466,7 +466,7 @@ class CookingSessionTests(SousChefsTestCase):
 
     def test_get_my_cooking_session_view(self):
         self.client.force_login(user=self.regular_user_1a)
-        resp = self.client.get(reverse("my_app:my-cooking-session-view"))
+        resp = self.client.get(reverse("my_app:my-cooking-session"))
         self.assertEqual(resp.status_code, 200)
 
 
