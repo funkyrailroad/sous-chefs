@@ -81,7 +81,7 @@ def create_cooking_session_view(request, recipe_id):
     recipe = u.get_recipe(recipe_id)
 
     cooking_group_name = f"Cook {recipe.name} with {request.user.first_name}"
-    cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
+    cooking_group = u.get_or_initialize_cooking_session(cooking_group_name, recipe.id)
     u.add_user_to_group(request.user.id, cooking_group.id)
     try:
         u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)

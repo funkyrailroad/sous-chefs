@@ -53,7 +53,7 @@ def add_user_to_group(user_id: int, group_id: int) -> None:
     user.groups.add(group)
 
 
-def initialize_cooking_session(cooking_group_name: str, recipe_id: int):
+def get_or_initialize_cooking_session(cooking_group_name: str, recipe_id: int):
     cooking_group, created = Group.objects.get_or_create(name=cooking_group_name)
     if created:
         initialize_user_tasks(recipe_id, cooking_group.id)

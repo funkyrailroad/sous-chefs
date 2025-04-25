@@ -454,9 +454,9 @@ class CookingSessionTests(SousChefsTestCase):
             f"Cook {self.recipe.name} with {self.admin_user_1.first_name}"
         )
 
-        u.initialize_cooking_session(cooking_group_name, self.recipe.id)
+        u.get_or_initialize_cooking_session(cooking_group_name, self.recipe.id)
 
-        u.initialize_cooking_session(cooking_group_name, self.recipe.id)
+        u.get_or_initialize_cooking_session(cooking_group_name, self.recipe.id)
 
     def test_2(self):
         # Additional testing ideas:
