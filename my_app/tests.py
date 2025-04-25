@@ -298,7 +298,8 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
                 kwargs=dict(
                     recipe_id=self.recipe_id,
                 ),
-            )
+            ),
+            follow=True
         )
         self.assertEqual(resp.status_code, 200)
         context = resp.context
@@ -466,7 +467,7 @@ class CookingSessionTests(SousChefsTestCase):
 
     def test_get_my_cooking_session_view(self):
         self.client.force_login(user=self.regular_user_1a)
-        resp = self.client.get(reverse("my_app:my-cooking-session"))
+        resp = self.client.get(reverse("my_app:my-cooking-session", args=(self.cooking_group_1.id,)))
         self.assertEqual(resp.status_code, 200)
 
 
