@@ -108,11 +108,8 @@ def list_my_cooking_sessions(request):
     return TemplateResponse(request, "my_app/list-my-cooking-sessions.html", context)
 
 
-def my_cooking_session_view(request):
-    user = request.user
-
-    # NOTE: this just grabs the first group, won't work for multiple groups
-    cooking_group = user.groups.first()
+def my_cooking_session_view(request, cooking_session_id):
+    cooking_group = m.Group.objects.get(id=cooking_session_id)
 
     recipe = u.get_recipe_from_group(cooking_group)
     join_group_url = u.create_cooking_session_join_url(request, cooking_group.id)
@@ -124,7 +121,7 @@ def my_cooking_session_view(request):
         "users": cooking_group.user_set.all(),
         "join_group_url": join_group_url,
     }
-    return TemplateResponse(request, "my_app/create-cooking-session.html", context)
+    return TemplateResponse(request, "my_app/my-cooking-session.html", context)
 
 
 @login_required

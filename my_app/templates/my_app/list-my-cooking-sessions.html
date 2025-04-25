@@ -4,7 +4,7 @@
 {% for cooking_session in cooking_sessions %}
   <div>
     <p>
-      <a href="{% url 'my_app:my-cooking-session' %}"> {{ cooking_session }} </a>
+      <a href="{% url 'my_app:my-cooking-session' cooking_session_id=cooking_session.id %}"> {{ cooking_session }} </a>
     </p>
   </div>
 {% endfor %}
