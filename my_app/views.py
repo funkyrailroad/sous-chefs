@@ -101,6 +101,13 @@ def create_cooking_session_view(request, recipe_id):
     return TemplateResponse(request, "my_app/create-cooking-session.html", context)
 
 
+def list_my_cooking_sessions(request):
+    user = request.user
+    cooking_sessions = user.groups.all()
+    context = dict(cooking_sessions=cooking_sessions)
+    return TemplateResponse(request, "my_app/list-my-cooking-sessions.html", context)
+
+
 def my_cooking_session_view(request):
     user = request.user
 
