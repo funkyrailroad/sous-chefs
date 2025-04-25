@@ -87,18 +87,7 @@ def create_cooking_session_view(request, recipe_id):
         u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
     except u.AllUserTasksAssigned:
         pass
-
-    # return a url (eventually QR code) that other people can go to to join
-    join_group_url = u.create_cooking_session_join_url(request, cooking_group.id)
-
-    # return current users in group
-    context = {
-        "recipe": recipe,
-        "group": cooking_group,
-        "users": cooking_group.user_set.all(),
-        "join_group_url": join_group_url,
-    }
-    return TemplateResponse(request, "my_app/create-cooking-session.html", context)
+    return redirect("my_app:my-cooking-session", cooking_group.id)
 
 
 def list_my_cooking_sessions(request):
