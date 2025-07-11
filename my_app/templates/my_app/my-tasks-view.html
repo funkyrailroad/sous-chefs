@@ -13,6 +13,10 @@
         </button>
       </form>
     </div>
+  {% empty %}
+      <form method="get" action="{% url 'my_app:get-next-user-task' group_id %}">
+        <button class="button" type="submit">Click for next task</button>
+      </form>
   {% endfor %}
 
   {% for task in my_completed_tasks %}

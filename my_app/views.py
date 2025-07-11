@@ -1,6 +1,7 @@
 import io
 from django.shortcuts import redirect
 from django.http import HttpResponse, HttpResponseForbidden
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.response import Response
 import my_app.models as m
@@ -52,8 +53,17 @@ def complete_user_task(request, usertask_id):
         user_task.save()
         cooking_group = user_task.group
         recipe = u.get_recipe_from_user_task(user_task)
+        return redirect("my_app:my-tasks-view")
+    return HttpResponseForbidden()
+
+
+@login_required
+def get_next_user_task(request, cooking_session_id):
+    if request.method == "GET":
+        group = u.get_group(cooking_session_id)
+        recipe = u.get_recipe_from_group(group)
         try:
-            u.get_next_task_for_user(request.user.id, recipe.id, cooking_group.id)
+            u.get_next_task_for_user(request.user.id, recipe.id, cooking_session_id)
         except u.AllUserTasksAssigned:
             # potentially could return something saying you've completed the
             # recipe!
@@ -81,14 +91,38 @@ def create_cooking_session_view(request, recipe_id):
     recipe = u.get_recipe(recipe_id)
 
     cooking_group_name = f"Cook {recipe.name} with {request.user.first_name}"
-    cooking_group = u.initialize_cooking_session(cooking_group_name, recipe.id)
+    cooking_group = u.get_or_initialize_cooking_session(cooking_group_name, recipe.id)
     u.add_user_to_group(request.user.id, cooking_group.id)
     try:
         u.get_next_task_for_user(request.user.id, recipe_id, cooking_group.id)
     except u.AllUserTasksAssigned:
         pass
+    return redirect("my_app:my-cooking-session", cooking_group.id)
 
-    # return a url (eventually QR code) that other people can go to to join
+
+def list_my_cooking_sessions(request):
+    user = request.user
+    cooking_sessions = user.groups.all()
+    if cooking_sessions.count() == 1:
+        # redirect to the only cooking session
+        return redirect("my_app:my-cooking-session", cooking_sessions.first().id)
+    context = dict(cooking_sessions=cooking_sessions)
+    return TemplateResponse(request, "my_app/list-my-cooking-sessions.html", context)
+
+
+def usertasks_in_group(request, cooking_session_id):
+    session = m.Group.objects.get(id=cooking_session_id)
+    usertasks = session.usertask_set.all()
+    context = dict(usertasks=usertasks)
+    return TemplateResponse(
+        request, "my_app/list-user-tasks-in-cooking-sessions.html", context
+    )
+
+
+def my_cooking_session_view(request, cooking_session_id):
+    cooking_group = m.Group.objects.get(id=cooking_session_id)
+
+    recipe = u.get_recipe_from_group(cooking_group)
     join_group_url = u.create_cooking_session_join_url(request, cooking_group.id)
 
     # return current users in group
@@ -98,7 +132,7 @@ def create_cooking_session_view(request, recipe_id):
         "users": cooking_group.user_set.all(),
         "join_group_url": join_group_url,
     }
-    return TemplateResponse(request, "my_app/create-cooking-session.html", context)
+    return TemplateResponse(request, "my_app/my-cooking-session.html", context)
 
 
 @login_required
