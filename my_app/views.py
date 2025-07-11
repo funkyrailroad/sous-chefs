@@ -1,6 +1,7 @@
 import io
 from django.shortcuts import redirect
 from django.http import HttpResponse, HttpResponseForbidden
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.response import Response
 import my_app.models as m
@@ -98,6 +99,15 @@ def list_my_cooking_sessions(request):
         return redirect("my_app:my-cooking-session", cooking_sessions.first().id)
     context = dict(cooking_sessions=cooking_sessions)
     return TemplateResponse(request, "my_app/list-my-cooking-sessions.html", context)
+
+
+def usertasks_in_group(request, cooking_session_id):
+    session = m.Group.objects.get(id=cooking_session_id)
+    usertasks = session.usertask_set.all()
+    context = dict(usertasks=usertasks)
+    return TemplateResponse(
+        request, "my_app/list-user-tasks-in-cooking-sessions.html", context
+    )
 
 
 def my_cooking_session_view(request, cooking_session_id):

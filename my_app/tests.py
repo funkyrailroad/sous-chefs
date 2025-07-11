@@ -568,3 +568,33 @@ class JoinCookingSessionQRCodeViewTests(SousChefsTestCase):
             ),
         )
         self.assertEqual(resp.status_code, 403)
+
+
+class SeeGroupTasksTests(SousChefsTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.recipe = create_test_recipe()
+        cls.recipe_id = cls.recipe.id
+
+        # create users
+        cls.admin_user = create_admin_test_users(1)[0]
+        cls.regular_user = create_regular_test_users(1)[0]
+
+        # initialize cooking session
+        group_name = f"{cls.admin_user.first_name}'s Cooking Session"
+        cls.cooking_group = Group.objects.create(name=group_name)
+
+        # add users to cooking session
+        u.add_user_to_group(cls.admin_user.id, cls.cooking_group.id)
+        u.add_user_to_group(cls.regular_user.id, cls.cooking_group.id)
+
+        # users all have their tasks
+        group_users = cls.cooking_group.user_set.all()
+        group_user_task_objs = u.initialize_user_tasks(
+            cls.recipe.id, cls.cooking_group.id
+        )
+        u.assign_initial_tasks_to_users(group_users, group_user_task_objs)
+
+        # call the endpoint for an admin to see all the tasks
+    def test_1(self):
+        resp = self.client.get(reverse("my_app:usertasks-in-group", args=(self.cooking_group.id,)))

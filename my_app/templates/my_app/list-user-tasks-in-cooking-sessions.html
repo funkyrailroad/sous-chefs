@@ -1,0 +1,41 @@
+{% extends "my_app/base.html" %}
+{% block body %}
+
+
+<section class="section">
+  <h1 class="title">{{ group.name }}</h1>
+
+  <div class="table-container">
+    <table class="table is-fullwidth is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Task</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for usertask in usertasks %}
+          <tr>
+            <td>{{ usertask.user.first_name }}</td>
+            <td>{{ usertask.task.description }}</td>
+            <td>
+              <span class="tag
+                {% if usertask.status == 'UP' %}is-info
+                {% elif usertask.status == 'AC' %}is-success
+                {% elif usertask.status == 'BL' %}is-warning
+                {% elif usertask.status == 'CO' %}is-primary
+                {% endif %}">
+                {{ usertask.get_status_display }}
+              </span>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+
+{% endblock %}
