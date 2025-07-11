@@ -1,0 +1,44 @@
+{% extends "my_app/base.html" %}
+{% block body %}
+
+{% if messages %}
+  <div class="block">
+    {% for message in messages %}
+      <div class="notification is-danger">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<form class="control" method="post">
+    {% csrf_token %}
+
+    <div class="block">
+      <label for="email">Email:</label>
+      <input class="input" type="email" name="email" required>
+    </div>
+
+    <div class="block">
+      <label for="password">Password:</label>
+      <input class="input" type="password" name="password" required>
+    </div>
+
+    <div class="block">
+      <label for="first_name">First name:</label>
+      <input class="input" type="text" name="first_name" required>
+    </div>
+
+    <div class="block">
+      <label for="last_name">Last name:</label>
+      <input class="input" type="text" name="last_name">
+    </div>
+
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <div class="block">
+      <button class="button is-primary" type="submit">Create account</button>
+    </div>
+</form>
+
+{% endblock %}
