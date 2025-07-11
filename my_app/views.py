@@ -53,8 +53,17 @@ def complete_user_task(request, usertask_id):
         user_task.save()
         cooking_group = user_task.group
         recipe = u.get_recipe_from_user_task(user_task)
+        return redirect("my_app:my-tasks-view")
+    return HttpResponseForbidden()
+
+
+@login_required
+def get_next_user_task(request, cooking_session_id):
+    if request.method == "GET":
+        group = u.get_group(cooking_session_id)
+        recipe = u.get_recipe_from_group(group)
         try:
-            u.get_next_task_for_user(request.user.id, recipe.id, cooking_group.id)
+            u.get_next_task_for_user(request.user.id, recipe.id, cooking_session_id)
         except u.AllUserTasksAssigned:
             # potentially could return something saying you've completed the
             # recipe!
