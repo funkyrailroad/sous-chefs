@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from my_app.tests import create_test_recipe
+from my_app.tests import create_recipe
+from my_app.data import test_recipe, test_recipe_2
 
 User = get_user_model()
 
@@ -22,4 +23,5 @@ user = User.objects.create_user(
 user.save()
 
 
-create_test_recipe()
+create_recipe(test_recipe)
+create_recipe(test_recipe_2)

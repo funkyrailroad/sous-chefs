@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-2%!)(7%!)#8c)@idd*sx_u^jve#aq-@-bz^uf)ka$sp9_%^3gs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.56', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.4.24', '127.0.0.1', "localhost", "sous-chefs.onrender.com"]
 
 
 # Application definition
@@ -141,3 +141,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://sous-chefs.onrender.com",
+]
