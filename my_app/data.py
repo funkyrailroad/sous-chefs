@@ -91,20 +91,53 @@ test_recipe = {
     ],
 }
 
+test_recipe_2 = {
+    "name": "Bratwurst with pesto pasta, greek salad and fruit",
+    "tasks": [
+        "get out pot for cooking pasta, fill it with water, and start boiling the water",
+        "boil and strain pasta",
+        "start playing some music and add some songs to the queue",
+        "fry bratwurst in a pan on medium heat until golden brown",
+        "slice fried bratwurst and continue frying until the ends are also browned, then turn off the heat",
+        "get out ingredients for salad",
+        "wash the pan that was used to cook the bratwurst",
+        "get out a bowl for the salad",
+        "rinse vegetables for salad",
+        "ask everybody for at least one song to add to the queue, and add them all to the queue",
+        "get bell peppers, remove seeds, slice into squares and put into salad bowl",
+        "slice cucumbers into bite-size and put into salad bowl",
+        "slice tomatoes into bite-size and put into salad bowl",
+        "slice red onion into thin rings and put into salad bowl",
+        "coursely chop olives and put into salad bowl",
+        "crumble feta cheese and put into salad bowl",
+        "Make the dressing in a small bowl, whisk together olive oil, lemon juice,",
+        "oregano, salt, and pepper to taste.",
+        "add the dressing to the salad bowl and mix well",
+        "get out a serving bowl/platter for the fruits",
+        "cut up the first of the fruits into bite-size pieces and put into serving bowl",
+        "cut up the second of the fruits into bite-size pieces and put into serving bowl",
+        "cut up the third of the fruits into bite-size pieces and put into serving bowl",
+        "put the bowl/platter of fruit into the fridge to keep cool",
+        "set the table with plates, cutlery, and glasses",
+    ],
+}
+
 """
 Bratwurst with pesto pasta, greek salad and fruit
 
 - get out pot for cooking pasta, fill it with water, and start boiling the
   water
 - boil and strain pasta
-- start playing some music and add three songs to the queue
+- start playing some music and add some songs to the queue
 - fry bratwurst in a pan on medium heat until golden brown
 - slice fried bratwurst and continue frying until the ends are also browned,
   then turn off the heat
 - get out ingredients for salad
 - wash the pan that was used to cook the bratwurst
-- rinse vegetables for salad
 - get out a bowl for the salad
+- rinse vegetables for salad
+- ask everybody for at least one song to add to the queue, and add them all to
+  the queue
 - get bell peppers, remove seeds, slice into squares and put into salad bowl
 - slice cucumbers into bite-size and put into salad bowl
 - slice tomatoes into bite-size and put into salad bowl
@@ -123,7 +156,6 @@ Bratwurst with pesto pasta, greek salad and fruit
   bowl
 - put the bowl/platter of fruit into the fridge to keep cool
 - set the table with plates, cutlery, and glasses
--
 
 
 
