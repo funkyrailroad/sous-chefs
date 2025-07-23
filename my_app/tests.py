@@ -10,6 +10,17 @@ import my_app.utils as u
 User = get_user_model()
 
 
+
+def create_recipe(recipe_dict) -> Recipe:
+    tasks = recipe_dict["tasks"]
+    recipe_name = recipe_dict["name"]
+    obj = Recipe.objects.create(name=recipe_name)
+    recipe_id = obj.id
+    task_objs = [Task(description=task, recipe_id=recipe_id) for task in tasks]
+    Task.objects.bulk_create(task_objs)
+    return obj
+
+
 def create_test_recipe() -> Recipe:
     tasks = test_recipe["tasks"]
     recipe_name = test_recipe["name"]
