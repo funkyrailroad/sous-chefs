@@ -1,14 +1,21 @@
 x by default all endpoints must be admin
 . keep thinking of these user scenarios:
+    . turn these user scenarios into cucumber/gherkin
 / define the user scenarios for the minimum prototype
-    - I'm the host and I want to navigate to an existing cooking group I
-      created
-        - see my group
-    - I'm the host and I want to see who is responsible for each task
-    - I'm a user and I want to see how I can complete my current task
+    ? I'm the host and I want to see who is responsible for each task
     - I'm a user and I want to update my user info
         . be able to update your user info (email, first_name, last_name,
           password)
+    . I'm a user and I can't complete my current task because it's blocked
+        - e.g. I'm supposed to clean something, but it's not done being used
+        . be able to skip a task,
+            . possibly also identify who's task is blocking it
+    . I'm the host/admin and I want to change the status of a task
+    x I'm the host and I want to navigate to an existing cooking group I
+      created
+        - see my group in login page
+        - My group
+    x I'm a user and I want to see how I can complete my current task
     x I'm the host and I want to see who is in my cooking group
         - cooking group detail view
     x I'm the host and I want to set up a recipe for people to cook
@@ -29,7 +36,28 @@ x by default all endpoints must be admin
         x create a cooking group (automatically)
         x invite two other users to join the recipe
         x distribute tasks to everybody
-/ figure out that flow to have a user without an account to scan a qr code,
+    . I'm a user and I accidentally marked a task as complete, but I didn't
+      actually finish it
+        - could have an "Undo" button next to the "Mark as complete" button
+            - unassigns the current task
+            - deletes the current task from the user's my-task-view
+                - (!might happen automatically)
+            - reactivates the user's most recent task
+            - remove strikethrough formatting from the user's my-task-view for that most
+              recent task
+                - (!might happen automatically)
+    x Require opt in for every task assignment
+    . I'm a user and I'm assigned a task, but I want to take a break and stop
+      getting tasks assigned to me
+    x I'm a user, I just completed a task. I should be prompted about if I
+      want another task.
+        ! could break up the logic in complete_user_task, complete is separate
+        from assign.
+        - in the template, if there are no active tasks, the user is prompted
+          with "Click for your next task."
+            - this button can call the get_new_task endpoint,
+
+x figure out that flow to have a user without an account to scan a qr code,
   create an account, and get redirected to the my tasks page
     x as admin, create cooking session
     x scan a qr code as a non-logged in user
@@ -40,15 +68,40 @@ x by default all endpoints must be admin
     x see my tasks
         x might have to use the "next" query parameter to redirect if it's
           provided
-    . plan a test for this
-        - create a group
-        - create an admin
-        - as an unlogged in user, go to the join url
+x change the flow to get to my-cooking-sessions
+    x Add front page link to My cooking sessions
+    x create list endpoint: my-cooking-sessions
+        x all sessions that current user is a part of
+    x create list-my-cooking-sessions.html
+    x link to each individual cooking session page
+    x detail endpoint my-cooking-sessions/<id>/
+        x use the create-cooking-session template and name it
+          my-cooking-session.html
+    x the create_cooking_session_view should return the detail template
+. fix bug where user clicks my cooking session without being in a group
+    - options:
+        - hide it from homepage
+        - link to my-cooking-sessions
+            - be able to select individual
+. be able to skip a step if it's not ready yet
+    - (e.g. can't start cooking pasta if the water isn't boiling yet)
+. be able to undo a task that was marked as complete
+    . release currently assigned task
+    . go back to most recently completed task
+    . probably have to adjust the ui too,
+        - delete the current task
+        -
+. create a test for the whole qr-scan/register/my-tasks workflow
+    - create a group
+    - create an admin
+    - as an unlogged in user, go to the join url
 x figure out the flow of having an unlogged in user with an account scan a qr
   code, log in, and get redirected to the my tasks page
+. the the user who's just been assigned a task know who the user was that had
+  the previous task (in case they're related)
 . only allow paying customers to create cooking sessions
     .
-. fix bug when use clicks my tasks without having been assigned a group or
+. fix bug when user clicks my tasks without having been assigned a group or
   task
 . don't error when a newly created user logs in and clicks my tasks
     - options:
