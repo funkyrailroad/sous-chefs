@@ -1,14 +1,13 @@
-from django.test import TestCase
-from rest_framework.test import APIClient
-from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
 
-from my_app.models import Recipe, Task, UserTask, Group
-from my_app.data import test_recipe
 import my_app.utils as u
+from my_app.data import test_recipe
+from my_app.models import Group, Recipe, Task, UserTask
 
 User = get_user_model()
-
 
 
 def create_recipe(recipe_dict) -> Recipe:
@@ -310,7 +309,7 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
                     recipe_id=self.recipe_id,
                 ),
             ),
-            follow=True
+            follow=True,
         )
         self.assertEqual(resp.status_code, 200)
         context = resp.context
@@ -319,7 +318,9 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
         self.assertNotIn(self.regular_user, group.user_set.all())
 
         # Check name of group
-        self.assertEqual(group.name, f"Cook {self.recipe.name} with {self.admin_user.first_name}")
+        self.assertEqual(
+            group.name, f"Cook {self.recipe.name} with {self.admin_user.first_name}"
+        )
 
         # admin has a task
         self.assertTrue(
@@ -478,7 +479,9 @@ class CookingSessionTests(SousChefsTestCase):
 
     def test_get_my_cooking_session_view(self):
         self.client.force_login(user=self.regular_user_1a)
-        resp = self.client.get(reverse("my_app:my-cooking-session", args=(self.cooking_group_1.id,)))
+        resp = self.client.get(
+            reverse("my_app:my-cooking-session", args=(self.cooking_group_1.id,))
+        )
         self.assertEqual(resp.status_code, 200)
 
 
@@ -607,5 +610,8 @@ class SeeGroupTasksTests(SousChefsTestCase):
         u.assign_initial_tasks_to_users(group_users, group_user_task_objs)
 
         # call the endpoint for an admin to see all the tasks
+
     def test_1(self):
-        resp = self.client.get(reverse("my_app:usertasks-in-group", args=(self.cooking_group.id,)))
+        resp = self.client.get(
+            reverse("my_app:usertasks-in-group", args=(self.cooking_group.id,))
+        )

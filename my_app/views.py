@@ -1,20 +1,20 @@
 import io
-from django.shortcuts import redirect
-from django.http import HttpResponse, HttpResponseForbidden
+
+import pyqrcode
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
-from rest_framework import viewsets
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import redirect
+from django.template.response import TemplateResponse
+from rest_framework import mixins, viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 import my_app.models as m
 import my_app.serializers as s
 import my_app.utils as u
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import mixins
-import pyqrcode
-
-from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.template.response import TemplateResponse
-from rest_framework.exceptions import ValidationError
 
 
 def index(request):
