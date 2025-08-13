@@ -1,16 +1,84 @@
+. notes on first alpha session:
+    - polish the product to avoid 80% of the criticisms people might have from
+      first using it (or keep some in to be able to gauge if people are
+      willing to critique even that)
+    - make it as easy as possible to log in
+    - make the opportunities to try it out with friends as easy as possible
+      (minimal sign in)
+        - email not necessary for starting
+        - possibly just a name
+        - default to the register page instead of sign in page
+    - add some context in the beginning
+        - explaining the purpose of the app
+        - what the recipe will be
+        - have some other
+    - improve the formatting of the my tasks page
+        - make tasks more obvious on first login (fred didn't realize it was a
+          task)
+        - increase spacing between tasks
+        - make tasks bullet points (avoid it becoming a wall of text for long
+          tasks)
+    - as admin, be able to more easily see that overall task view
+        - be able to navigate to it from the dropdown menu
+        - be able to navigate to it from the my tasks page
+        - be able to navigate to the my tasks page from the cooking session
+          page
+    - have a task detail page
+        - see relevant ingredients and amounts for each task
+        - be able to mark status as completed, blocked
+    - be able to undo a "mark task as complete"
+    - possible change the current task view to the "list my tasks" or "my task
+      history" view
+    - figure out what to do for blocking tasks (e.g. make a task unavailable
+      for n minutes)
+        - don't pass out tasks that may be blocked by something else
+        - clustering tasks into lines to deal with dependencies
+        - allow a user to mark a task as blocked and to specify which user's
+          task is blocking it
+            - my task is blocked!
+            - which task is blocking it?
+                - show the active tasks, and they can click the task that's
+                  blocking it
+                    - better than specifying a name, because people may have
+                      switched phones (e.g. Fred and Anusha)
+        -
 x by default all endpoints must be admin
+. usage notes:
+    - get drinks/water
+    - better distribute long running tasks
+    - physical activity warning
+    -
 . keep thinking of these user scenarios:
     . turn these user scenarios into cucumber/gherkin
+. connect the render instance to the postgres
+    - be able to use sqlite locally and postgres in prod
+. switch this over to use cookiecutter
 / define the user scenarios for the minimum prototype
-    ? I'm the host and I want to see who is responsible for each task
-    - I'm a user and I want to update my user info
-        . be able to update your user info (email, first_name, last_name,
-          password)
+    / I'm a user and I haven't chosen a recipe yet. I want to see a list of
+      ingredients and amounts for each recipe
+    . I'm a user and I'm working on a task. I want to know how much of each
+      ingredient I should add
     . I'm a user and I can't complete my current task because it's blocked
         - e.g. I'm supposed to clean something, but it's not done being used
         . be able to skip a task,
             . possibly also identify who's task is blocking it
+    - I'm a user and I want to update my user info
+        . be able to update your user info (email, first_name, last_name,
+          password)
+    . I'm a user and I'm assigned a task, but I want to take a break and stop
+      getting tasks assigned to me
+    . I'm a user and I accidentally marked a task as complete, but I didn't
+      actually finish it
+        - could have an "Undo" button next to the "Mark as complete" button
+            - unassigns the current task
+            - deletes the current task from the user's my-task-view
+                - (!might happen automatically)
+            - reactivates the user's most recent task
+            - remove strikethrough formatting from the user's my-task-view for that most
+              recent task
+                - (!might happen automatically)
     . I'm the host/admin and I want to change the status of a task
+    x I'm the host and I want to see who is responsible for each task
     x I'm the host and I want to navigate to an existing cooking group I
       created
         - see my group in login page
@@ -36,19 +104,7 @@ x by default all endpoints must be admin
         x create a cooking group (automatically)
         x invite two other users to join the recipe
         x distribute tasks to everybody
-    . I'm a user and I accidentally marked a task as complete, but I didn't
-      actually finish it
-        - could have an "Undo" button next to the "Mark as complete" button
-            - unassigns the current task
-            - deletes the current task from the user's my-task-view
-                - (!might happen automatically)
-            - reactivates the user's most recent task
-            - remove strikethrough formatting from the user's my-task-view for that most
-              recent task
-                - (!might happen automatically)
     x Require opt in for every task assignment
-    . I'm a user and I'm assigned a task, but I want to take a break and stop
-      getting tasks assigned to me
     x I'm a user, I just completed a task. I should be prompted about if I
       want another task.
         ! could break up the logic in complete_user_task, complete is separate
@@ -57,27 +113,24 @@ x by default all endpoints must be admin
           with "Click for your next task."
             - this button can call the get_new_task endpoint,
 
-x figure out that flow to have a user without an account to scan a qr code,
-  create an account, and get redirected to the my tasks page
-    x as admin, create cooking session
-    x scan a qr code as a non-logged in user
-    x get prompted to login
-    x click register
-        x I don't jump to the join cooking session page, that must have gotten
-          lost while going from the login page to the registration page
-    x see my tasks
-        x might have to use the "next" query parameter to redirect if it's
-          provided
-x change the flow to get to my-cooking-sessions
-    x Add front page link to My cooking sessions
-    x create list endpoint: my-cooking-sessions
-        x all sessions that current user is a part of
-    x create list-my-cooking-sessions.html
-    x link to each individual cooking session page
-    x detail endpoint my-cooking-sessions/<id>/
-        x use the create-cooking-session template and name it
-          my-cooking-session.html
-    x the create_cooking_session_view should return the detail template
+/ I'm a user and I haven't chosen a recipe yet. I want to see a list of
+  ingredients and amounts for each recipe
+    . create a separate table for ingredients
+        - this can have the basic food items (name, maybe even some macro
+          stuff)
+    . create a separate table for recipe_ingredients
+        - this can have a link to the ingredients table
+        - it can also have some extra columns, e.g. the amount and unit (e.g.
+          2 oz)
+            - amount: float
+            - unit: choice_field
+. I'm a user and I'm working on a task. I want to know how much of each
+  ingredient I should add
+    - user_tasks might need a detail view
+    - user_tasks could also have another column that references
+      recipe_ingredient
+    ! somewhere needs to be the servings multiplier
+        - could be in the create a session
 . fix bug where user clicks my cooking session without being in a group
     - options:
         - hide it from homepage
@@ -157,6 +210,17 @@ x figure out the flow of having an unlogged in user with an account scan a qr
     - I could do a one-to-many relationship between groups and user_tasks
         - One group can have many user_tasks
         - One user_task has exactly one group
+x figure out that flow to have a user without an account to scan a qr code,
+  create an account, and get redirected to the my tasks page
+    x as admin, create cooking session
+    x scan a qr code as a non-logged in user
+    x get prompted to login
+    x click register
+        x I don't jump to the join cooking session page, that must have gotten
+          lost while going from the login page to the registration page
+    x see my tasks
+        x might have to use the "next" query parameter to redirect if it's
+          provided
 x handle user registration bugs (create tests)
     x log user in and redirect to home after account is created
     x be able to create multiple new users
@@ -164,6 +228,16 @@ x handle user registration bugs (create tests)
 x be able to show users a qr code to join a cooking group
     - create qr code from
     - cache this view
+x change the flow to get to my-cooking-sessions
+    x Add front page link to My cooking sessions
+    x create list endpoint: my-cooking-sessions
+        x all sessions that current user is a part of
+    x create list-my-cooking-sessions.html
+    x link to each individual cooking session page
+    x detail endpoint my-cooking-sessions/<id>/
+        x use the create-cooking-session template and name it
+          my-cooking-session.html
+    x the create_cooking_session_view should return the detail template
 x fix bug when user creates session, but all the user tasks have been
   completed
 x joining a session when all the tasks have been assigned and/or completed
@@ -292,3 +366,9 @@ x keep going with tasks
     x assign tasks to users
 . model recipes as DAGs (topological sort)
     - https://philuvarov.io/python-top-sort/
+. host the project on my local network:
+    - https://chatgpt.com/c/67f7d6d9-7194-8010-872f-86f0d544d607
+    - find my local IP address with ifconfig
+    - Look for something like inet 192.168.x.x under your active network
+      adapter (often en0 or wlan0).
+    - 192.168.178.94
