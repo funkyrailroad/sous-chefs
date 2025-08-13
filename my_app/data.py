@@ -190,8 +190,11 @@ Ingredients:
     - green pesto
 - greek salad
     - cucumber
-    - penne pasta
-    - green pesto
+    - tomato
+    - bell peppers
+    - red onion
+    - olives
+    - feta cheese
 - greek salad dressing
     - olive oil
     - lemon juice
@@ -199,8 +202,9 @@ Ingredients:
     - salt
     - pepper
     - garlic
-    - red wine vinegar
-    - dill
 - dessert
     - three different fruits
+    - apples
+    - oranges
+    - peaches
 """
