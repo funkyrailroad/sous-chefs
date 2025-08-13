@@ -94,31 +94,53 @@ test_recipe = {
 test_recipe_2 = {
     "name": "Bratwurst with pesto pasta, greek salad and fruit",
     "tasks": [
-        "get out pot for cooking pasta, fill it with water, and start boiling the water",
-        "boil and strain pasta",
-        "start playing some music and add some songs to the queue",
-        "fry bratwurst in a pan on medium heat until golden brown",
-        "slice fried bratwurst and continue frying until the ends are also browned, then turn off the heat",
-        "get out ingredients for salad",
-        "wash the pan that was used to cook the bratwurst",
-        "get out a bowl for the salad",
-        "rinse vegetables for salad",
-        "ask everybody for at least one song to add to the queue, and add them all to the queue",
-        "get bell peppers, remove seeds, slice into squares and put into salad bowl",
-        "slice cucumbers into bite-size and put into salad bowl",
-        "slice tomatoes into bite-size and put into salad bowl",
-        "slice red onion into thin rings and put into salad bowl",
-        "coursely chop olives and put into salad bowl",
-        "crumble feta cheese and put into salad bowl",
-        "Make the dressing in a small bowl, whisk together olive oil, lemon juice,",
-        "oregano, salt, and pepper to taste.",
-        "add the dressing to the salad bowl and mix well",
-        "get out a serving bowl/platter for the fruits",
-        "cut up the first of the fruits into bite-size pieces and put into serving bowl",
-        "cut up the second of the fruits into bite-size pieces and put into serving bowl",
-        "cut up the third of the fruits into bite-size pieces and put into serving bowl",
-        "put the bowl/platter of fruit into the fridge to keep cool",
-        "set the table with plates, cutlery, and glasses",
+        "get out pot for cooking pasta, fill it with water, and start boiling the water",                       # 1a takes time
+        "fry bratwurst in a pan on medium heat until golden brown",                                             # 2a takes time
+        "start playing some music, ask everybody for one or two songs to add to the queue, and add them",       # fun-a
+        "Get out a serving bowl for the salad and tell others this is the salad bowl",                          # 3a
+        "get bell peppers, rinse, remove seeds, slice into squares and put into salad bowl",                    # 3b
+        "Get cucumbers, rinse, slice into bite-size pieces and put into salad bowl",                            # 3c
+        "Get tomatoes, rinse, slice into bite-size pieces and put into salad bowl",                             # 3d
+        "Get red onion, rinse, slice into thin rings and put into salad bowl",                                  # 3e
+        "Add pasta to boiling water for proper duration and strain it when done",                               # 1b takes time
+        "Slice fried bratwurst and continue frying until the ends are also browned, then turn off the heat",    # 2b takes time
+        "Get out a serving bowl for the pasta, add the cooked pasta and mix in the pesto",                      # 1c
+        "Add the fried bratwurst slices to the mixed pesto pasta and mix well",                                 # 2c
+        "wash the pan that was used to cook the bratwurst",                                                     # 2d
+        "Coursely chop olives and put into salad bowl",                                                         # 3f
+        "Crumble feta cheese and put into salad bowl",                                                          # 3g
+        "Get garlic and dice it for the salad dressing, put near the salad bowl",                               # 3h
+        "Ask everybody for one or two songs to add to the music queue, and add them all to the queue",          # fun-b
+        "Make the salad dressing in a small bowl, whisk together olive oil, lemon juice, oregano, salt, pepper and garlic to taste.",  # 3i
+        "Get out a serving bowl/platter for the fruits",                                                        # 4a
+        "wash the pot that was used to cook the pasta",                                                         # 1d
+        "do 10 pushups",                                                                                        # fun-c
+        "do 10 pushups",                                                                                        # fun-c
+        "Cut up the first of the fruits into bite-sized pieces and put into serving bowl",                      # 4b
+        "do 10 pushups",                                                                                        # fun-c
+        "do 10 pushups",                                                                                        # fun-c
+        "Cut up the second of the fruits into bite-sized pieces and put into serving bowl",                     # 4c
+        "Have everybody taste the salad dressing to see how it can be improved, and make the improvements",     # 3j
+        "do 10 pushups",                                                                                        # fun-c
+        "do 10 pushups",                                                                                        # fun-c
+        "Add the finished salad dressing to the salad bowl and mix well",                                       # 3k
+        "Cut up the third of the fruits into bite-sized pieces and put into serving bowl",                      # 4d
+        "Put the bowl/platter of cut fruit into the fridge to keep cool",                                       # 4e
+        "set the table with plates",                                                                            # 5a
+        "set the table with forks and knives",                                                                  # 5b
+        "set the table with glasses",                                                                           # 5c
+        "Put the finished pesto pasta w/ bratwurst serving bowl/platter on the table",                          # 5d
+        "Put the finished salad bowl on the table",                                                             # 5e
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
+        "go sit at the table (don't mark this task as complete)",
     ],
 }
 
@@ -168,8 +190,11 @@ Ingredients:
     - green pesto
 - greek salad
     - cucumber
-    - penne pasta
-    - green pesto
+    - tomato
+    - bell peppers
+    - red onion
+    - olives
+    - feta cheese
 - greek salad dressing
     - olive oil
     - lemon juice
@@ -177,8 +202,9 @@ Ingredients:
     - salt
     - pepper
     - garlic
-    - red wine vinegar
-    - dill
 - dessert
     - three different fruits
+    - apples
+    - oranges
+    - peaches
 """
