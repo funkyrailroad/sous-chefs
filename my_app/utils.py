@@ -1,7 +1,8 @@
-from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from my_app.models import Task, UserTask, Recipe
+from django.urls import reverse
+
+from my_app.models import Recipe, Task, UserTask
 
 User = get_user_model()
 
