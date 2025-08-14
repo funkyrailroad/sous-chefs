@@ -50,6 +50,17 @@ def complete_user_task(request, usertask_id):
 
 
 @login_required
+def block_user_task(request, usertask_id):
+    """Mark user task as blocked."""
+    if request.method == "POST":
+        user_task = m.UserTask.objects.get(id=usertask_id)
+        # TODO: specify which task is blocking, it's just generically blocked now
+        user_task.mark_as_blocked()
+        return redirect("my_app:my-tasks-view")
+    return HttpResponseForbidden()
+
+
+@login_required
 def get_next_user_task(request, cooking_session_id):
     if request.method == "GET":
         group = u.get_group(cooking_session_id)
