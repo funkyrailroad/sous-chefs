@@ -22,6 +22,10 @@ def assign_initial_tasks_to_users(
     return initially_assigned_tasks
 
 
+def get_all_usertasks_in_group(group_id: int) -> list[UserTask]:
+    return UserTask.objects.filter(group_id=group_id).order_by("task__id")
+
+
 def get_recipe(recipe_id: int) -> Recipe:
     return Recipe.objects.get(id=recipe_id)
 
@@ -52,6 +56,11 @@ def add_user_to_group(user_id: int, group_id: int) -> None:
     user = get_user(user_id)
     group = get_group(group_id)
     user.groups.add(group)
+
+
+def add_users_to_group(user_ids: list[int], group_id: int) -> None:
+    for user_id in user_ids:
+        add_user_to_group(user_id, group_id)
 
 
 def get_or_initialize_cooking_session(cooking_group_name: str, recipe_id: int):

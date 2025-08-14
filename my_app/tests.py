@@ -61,6 +61,12 @@ def create_admin_test_users(n_users: int) -> list[User]:
     return users
 
 
+def create_admin_and_regular_users(n_admin_users: int, n_regular_users: int) -> tuple[list[User], list[User]]:
+    admin_users = create_admin_test_users(n_admin_users)
+    regular_users = create_regular_test_users(n_regular_users)
+    return admin_users, regular_users
+
+
 class SousChefsTestCase(TestCase):
     api_client = APIClient()
 
