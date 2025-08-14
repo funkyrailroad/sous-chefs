@@ -123,9 +123,6 @@ def create_cooking_session_view(request, recipe_id):
 def list_my_cooking_sessions(request):
     user = request.user
     cooking_sessions = user.groups.all()
-    if cooking_sessions.count() == 1:
-        # redirect to the only cooking session
-        return redirect("my_app:my-cooking-session", cooking_sessions.first().id)
     context = dict(cooking_sessions=cooking_sessions)
     return TemplateResponse(request, "my_app/list-my-cooking-sessions.html", context)
 
