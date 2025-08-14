@@ -25,14 +25,9 @@ def home(request):
     return TemplateResponse(request, "my_app/home.html", {})
 
 
-def get_tasks_for_user(user_id: int) -> m.UserTask:
-    usertasks = m.UserTask.objects.filter(user=user_id)
-    return usertasks
-
-
 @login_required
 def my_tasks_view(request):
-    my_tasks = get_tasks_for_user(request.user.id)
+    my_tasks = u.get_tasks_for_user(request.user.id)
     my_tasks = my_tasks.order_by("-task__id")
     my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
     my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)

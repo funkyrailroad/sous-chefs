@@ -140,3 +140,8 @@ def create_cooking_session_join_url(request, cooking_session_id):
     return request.build_absolute_uri(
         reverse("my_app:join-cooking-session", args=[cooking_session_id])
     )
+
+
+def get_tasks_for_user(user_id: int) -> UserTask:
+    usertasks = UserTask.objects.filter(user=user_id)
+    return usertasks
