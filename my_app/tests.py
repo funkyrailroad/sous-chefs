@@ -245,7 +245,7 @@ class AssignNextTaskTests(SousChefsTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as completed
-        first_unassigned_task = u.get_first_unassigned_task(
+        first_unassigned_task = u.get_first_upcoming_task(
             self.recipe_id, self.cooking_group.id
         )
         first_unassigned_task.user = self.user
@@ -279,7 +279,7 @@ class AssignNextTaskTests(SousChefsTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as active
-        first_unassigned_task = u.get_first_unassigned_task(
+        first_unassigned_task = u.get_first_upcoming_task(
             self.recipe_id, self.cooking_group.id
         )
         first_unassigned_task.user = self.user
