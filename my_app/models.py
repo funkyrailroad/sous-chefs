@@ -63,6 +63,9 @@ class UserTask(models.Model):
         self.status = UserTask.TaskStatus.COMPLETED
         self.save()
 
+    def mark_blocked_tasks_as_upcoming(self):
+        self.blocked_tasks.update(status=UserTask.TaskStatus.UPCOMING)
+
     def mark_as_blocked_by(self, blocking_task: "UserTask"):
         self.status = UserTask.TaskStatus.BLOCKED
         self.blocked_by = blocking_task
