@@ -13,7 +13,7 @@
         </button>
       </form>
 
-      <form action="{% url 'my_app:block-user-task' task.id %}" method="post" style="display: inline;">
+      <form action="{% url 'my_app:block-user-task' task.id %}" method="get" style="display: inline;">
         {% csrf_token %}
         <button type="submit" class="button is-small is-danger">
           Mark as blocked

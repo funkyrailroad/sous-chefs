@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from django.urls import reverse_lazy
 from django.views.generic import DetailView
 from django.views.generic.edit import UpdateView
 from rest_framework import mixins, viewsets
@@ -14,6 +15,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+import my_app.forms as f
 import my_app.models as m
 import my_app.serializers as s
 import my_app.utils as u
@@ -26,6 +28,21 @@ class UserTaskUpdateView(UpdateView):
 
 class UserTaskDetailView(DetailView):
     model = m.UserTask
+
+
+class UserTaskBlockView(UpdateView):
+    model = m.UserTask
+    form_class = f.UserTaskBlockForm
+    template_name_suffix = "_block"
+    success_url = reverse_lazy("my_app:my-tasks-view")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        usertask = self.get_object()
+        # get all active tasks in the cooking session
+        qs = u.get_all_usertasks_in_group(usertask.group.id)
+        kwargs["potential_blocking_tasks"] = qs.active().exclude(pk=usertask.pk)
+        return kwargs
 
 
 def index(request):
@@ -56,17 +73,6 @@ def complete_user_task(request, usertask_id):
     if request.method == "POST":
         user_task = m.UserTask.objects.get(id=usertask_id)
         user_task.mark_as_completed()
-        return redirect("my_app:my-tasks-view")
-    return HttpResponseForbidden()
-
-
-@login_required
-def block_user_task(request, usertask_id):
-    """Mark user task as blocked."""
-    if request.method == "POST":
-        user_task = m.UserTask.objects.get(id=usertask_id)
-        # TODO: specify which task is blocking, it's just generically blocked now
-        user_task.mark_as_blocked()
         return redirect("my_app:my-tasks-view")
     return HttpResponseForbidden()
 
