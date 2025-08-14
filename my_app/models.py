@@ -39,6 +39,7 @@ class UserTask(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     blocked_by = models.ForeignKey("self", on_delete=models.DO_NOTHING, null=True, blank=True, related_name="blocked_tasks")
+    reported_blocked_by = models.ForeignKey(get_user_model(), on_delete=models.DO_NOTHING, null=True, blank=True, related_name="reported_blocked_tasks")
 
     class TaskStatus(models.TextChoices):
         UPCOMING = "UP", _("Upcoming")
@@ -65,6 +66,8 @@ class UserTask(models.Model):
     def mark_as_blocked_by(self, blocking_task: "UserTask"):
         self.status = UserTask.TaskStatus.BLOCKED
         self.blocked_by = blocking_task
+        self.reported_blocked_by = self.user
+        self.user = None  # Unassign the user from this task
         self.save()
 
     def mark_as_blocked(self):
