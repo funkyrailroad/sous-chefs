@@ -1,0 +1,15 @@
+{% extends "my_app/base.html" %}
+{% block body %}
+
+  <h1 class="title is-3">Task Detail</h1>
+
+  <p>User: {{ object.user }}</p>
+  <p>Task: {{ object.task.description }}</p>
+  <p>Group: {{ object.group }}</p>
+  <p>Status: {{ object.get_status_display }}</p>
+
+  <a href="{% url 'my_app:usertask-update' object.id %}">
+    Update
+  </a>
+
+{% endblock %}
