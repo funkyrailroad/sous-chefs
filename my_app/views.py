@@ -49,8 +49,7 @@ def my_tasks_view(request):
 def complete_user_task(request, usertask_id):
     if request.method == "POST":
         user_task = m.UserTask.objects.get(id=usertask_id)
-        user_task.status = m.UserTask.TaskStatus.COMPLETED
-        user_task.save()
+        user_task.mark_as_completed()
         cooking_group = user_task.group
         recipe = u.get_recipe_from_user_task(user_task)
         return redirect("my_app:my-tasks-view")
