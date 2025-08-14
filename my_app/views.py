@@ -70,6 +70,7 @@ def my_tasks_view(request):
 
 @login_required
 def complete_user_task(request, usertask_id):
+    """Mark user task as completed."""
     if request.method == "POST":
         user_task = m.UserTask.objects.get(id=usertask_id)
         user_task.mark_as_completed()
@@ -107,6 +108,7 @@ def recipes_detail_view(request, recipe_id):
 
 @login_required
 # Could make sense if this is for admins only
+# This should probably be a POST, and redirect to the detail view
 def create_cooking_session_view(request, recipe_id):
     recipe = u.get_recipe(recipe_id)
 
