@@ -7,6 +7,8 @@
   <p>Task: {{ object.task.description }}</p>
   <p>Group: {{ object.group }}</p>
   <p>Status: {{ object.get_status_display }}</p>
+  <p>Blocked by: {{ object.blocked_by.task }}</p>
+  <p>Report blocked by: {{ object.reported_blocked_by }}</p>
 
   <a href="{% url 'my_app:usertask-update' object.id %}">
     Update
