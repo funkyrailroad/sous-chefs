@@ -20,6 +20,20 @@ class Task(models.Model):
         return f"{self.id} - {self.description[:50]}..."
 
 
+class UserTaskQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(status=UserTask.TaskStatus.ACTIVE)
+
+    def completed(self):
+        return self.filter(status=UserTask.TaskStatus.COMPLETED)
+
+    def blocked(self):
+        return self.filter(status=UserTask.TaskStatus.BLOCKED)
+
+    def upcoming(self):
+        return self.filter(status=UserTask.TaskStatus.UPCOMING)
+
+
 class UserTask(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
@@ -33,6 +47,7 @@ class UserTask(models.Model):
         COMPLETED = "CO", _("Completed")
 
     status = models.CharField(choices=TaskStatus.choices, max_length=5)
+    objects = UserTaskQuerySet.as_manager()
 
     def __str__(self):
         return f"{self.user} - {self.task}..."
@@ -41,3 +56,25 @@ class UserTask(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["task", "group"], name="unique user tasks")
         ]
+
+    def mark_as_completed(self):
+        # if this task blocks any others, unblock those tasks
+        self.status = UserTask.TaskStatus.COMPLETED
+        self.save()
+
+    def mark_as_blocked_by(self, blocking_task: "UserTask"):
+        self.status = UserTask.TaskStatus.BLOCKED
+        self.blocked_by = blocking_task
+        self.save()
+
+    def mark_as_blocked(self):
+        self.status = UserTask.TaskStatus.BLOCKED
+        self.save()
+
+    def mark_as_active(self):
+        self.status = UserTask.TaskStatus.ACTIVE
+        self.save()
+
+    def mark_as_upcoming(self):
+        self.status = UserTask.TaskStatus.UPCOMING
+        self.save()
