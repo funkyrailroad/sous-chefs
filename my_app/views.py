@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from django.views.generic import DetailView
+from django.views.generic.edit import UpdateView
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -15,6 +17,15 @@ from rest_framework.response import Response
 import my_app.models as m
 import my_app.serializers as s
 import my_app.utils as u
+
+
+class UserTaskUpdateView(UpdateView):
+    model = m.UserTask
+    fields = ["user", "task", "status"]
+
+
+class UserTaskDetailView(DetailView):
+    model = m.UserTask
 
 
 def index(request):
