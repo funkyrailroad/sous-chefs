@@ -623,3 +623,77 @@ class SeeGroupTasksTests(SousChefsTestCase):
         resp = self.client.get(
             reverse("my_app:usertasks-in-group", args=(self.cooking_group.id,))
         )
+
+
+class BlockingTasksTests(SousChefsTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        recipe_dict = {
+            "name": "Bratwurst with pesto pasta, greek salad and fruit",
+            "tasks": [
+                "get out pot for cooking pasta, fill it with water, and start boiling the water",  # 1a takes time
+                "fry bratwurst in a pan on medium heat until golden brown",  # 2a takes time
+                "start playing some music, ask everybody for one or two songs to add to the queue, and add them",  # fun-a
+                "Add pasta to boiling water for proper duration and strain it when done",  # 1b takes time
+                "Get out a serving bowl for the salad and tell others this is the salad bowl",  # 3a
+                "get bell peppers, rinse, remove seeds, slice into squares and put into salad bowl",  # 3b
+                "Get cucumbers, rinse, slice into bite-size pieces and put into salad bowl",  # 3c
+                "Get tomatoes, rinse, slice into bite-size pieces and put into salad bowl",  # 3d
+                "Get red onion, rinse, slice into thin rings and put into salad bowl",  # 3e
+            ],
+        }
+        cls.recipe = create_recipe(recipe_dict)
+        # create all user tasks for the recipe
+        cls.cooking_session = u.get_or_initialize_cooking_session(
+            "Test cooking session", cls.recipe.id
+        )
+        admin_users, regular_users = create_admin_and_regular_users(1, 3)
+        cls.admin_user = admin_users[0]
+        cls.regular_user_1 = regular_users[0]
+        cls.regular_user_2 = regular_users[1]
+        cls.regular_user_3 = regular_users[2]
+
+        all_users = [*admin_users, *regular_users]
+        all_user_ids = [user.id for user in all_users]
+        # add the three users to the cooking group
+        u.add_users_to_group(all_user_ids, cls.cooking_session.id)
+
+        usertasks = u.get_all_usertasks_in_group(cls.cooking_session.id)
+        cls.initial_tasks = u.assign_initial_tasks_to_users(all_users, usertasks)
+
+    def test_blocked_task_not_distributed_until_freed(self):
+        blocked_usertask: UserTask = self.regular_user_3.usertask_set.active().get()
+        blocking_usertask: UserTask = self.admin_user.usertask_set.active().get()
+
+        # reg_user_3 marks task as blocked by first task
+        blocked_usertask.mark_as_blocked_by(blocking_usertask)
+        u.get_next_task_for_user(
+            self.regular_user_3.id, self.recipe.id, self.cooking_session.id
+        )
+        # check that regular_user_3 has an active task
+        self.assertEqual(self.regular_user_3.usertask_set.active().count(), 1)
+
+        # Assign and complete all remaining tasks
+        while True:
+            try:
+                usertask = u.get_next_task_for_user(
+                    self.regular_user_3.id, self.recipe.id, self.cooking_session.id
+                )
+                usertask.mark_as_completed()
+            except u.AllUserTasksAssigned:
+                break
+
+        self.assertEqual(self.regular_user_3.usertask_set.active().count(), 0)
+
+        # complete the blocking task
+        blocking_usertask.mark_as_completed()
+        blocking_usertask.mark_blocked_tasks_as_upcoming()
+
+        # assign another task to the user
+        usertask = u.get_next_task_for_user(self.regular_user_3.id, self.recipe.id, self.cooking_session.id)
+        # verify the task that is assigned is the task that was blocked
+        self.assertEqual(usertask, blocked_usertask)
+
+        # verify no more available upcoming tasks
+        with self.assertRaises(u.AllUserTasksAssigned):
+            u.get_first_upcoming_task(self.recipe.id, self.cooking_session.id)
