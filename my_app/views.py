@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import UpdateView
 from rest_framework import mixins, viewsets
@@ -54,7 +54,6 @@ class UserTaskBlockView(UpdateView):
     model = m.UserTask
     form_class = f.UserTaskBlockForm
     template_name_suffix = "_block"
-    success_url = reverse_lazy("my_app:my-tasks-view")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -63,6 +62,9 @@ class UserTaskBlockView(UpdateView):
         qs = u.get_all_usertasks_in_group(usertask.group.id)
         kwargs["potential_blocking_tasks"] = qs.active().exclude(pk=usertask.pk)
         return kwargs
+
+    def get_success_url(self, **kwargs) -> str:
+        return reverse_lazy("my_app:my-tasks-view", args=(self.object.group.id,))
 
 
 def index(request):
@@ -74,18 +76,18 @@ def home(request):
 
 
 @login_required
-def my_tasks_view(request):
+def cooking_sessions_my_tasks_view(request, pk):
     my_tasks = u.get_tasks_for_user(request.user.id)
     my_tasks = my_tasks.order_by("-task__id")
-    my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
-    my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
-    group_id = my_tasks.first().group.id
-    context = {
-        "group_id": group_id,
-        "my_active_tasks": my_active_tasks,
-        "my_completed_tasks": my_completed_tasks,
-    }
-    return TemplateResponse(request, "my_app/my-tasks-view.html", context)
+    context = {"group_id": pk}
+    if my_tasks.count() != 0:
+        my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
+        my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
+        context.update({
+            "my_active_tasks": my_active_tasks,
+            "my_completed_tasks": my_completed_tasks,
+        })
+    return TemplateResponse(request, "my_app/cooking-sessions-my-tasks-view.html", context)
 
 
 @login_required
@@ -94,7 +96,7 @@ def complete_user_task(request, usertask_id):
     if request.method == "POST":
         user_task = m.UserTask.objects.get(id=usertask_id)
         user_task.mark_as_completed()
-        return redirect("my_app:my-tasks-view")
+        return redirect(reverse("my_app:my-tasks-view", args=(user_task.group.id,)))
     return HttpResponseForbidden()
 
 
@@ -183,7 +185,7 @@ def join_cooking_session_view(request, group_id):
         u.get_next_task_for_user(request.user.id, recipe.id, group.id)
     except u.AllUserTasksAssigned:
         pass
-    return redirect("my_app:my-tasks-view")
+    return redirect(reverse("my_app:my-tasks-view", args=(group.id,)))
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):
