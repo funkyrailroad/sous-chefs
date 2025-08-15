@@ -719,3 +719,17 @@ class BlockingTasksTests(SousChefsTestCase):
                 user="",
             ),
         )
+
+
+class CallUrlsTests(SousChefsTestCase):
+    def test_get_home(self):
+        self.client.get(reverse("my_app:home"))
+
+    def test_get_index(self):
+        self.client.get(reverse("my_app:index"))
+
+    def test_get_recipes_list_view(self):
+        self.client.get(reverse("my_app:recipes-list-view"))
+
+    def test_get_list_my_cooking_sessions(self):
+        self.client.get(reverse("my_app:list-my-cooking-sessions"))
