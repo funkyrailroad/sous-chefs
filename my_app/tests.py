@@ -728,6 +728,23 @@ class BlockingTasksTests(SousChefsTestCase):
 
 
 class CallUrlsTests(SousChefsTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.recipe = create_test_recipe()
+        cls.cooking_session = u.get_or_initialize_cooking_session(
+            "Test cooking session", cls.recipe.id
+        )
+        admin_users, regular_users = create_admin_and_regular_users(1, 1)
+        cls.admin_user = admin_users[0]
+        cls.regular_user = regular_users[0]
+
+        all_users = [*admin_users, *regular_users]
+        all_user_ids = [user.id for user in all_users]
+        usertasks = u.get_all_usertasks_in_group(cls.cooking_session.id)
+        u.add_users_to_group(all_user_ids, cls.cooking_session.id)
+        u.assign_initial_tasks_to_users(all_users, usertasks)
+        cls.initial_tasks = u.assign_initial_tasks_to_users(all_users, usertasks)
+
     def test_get_home(self):
         self.client.get(reverse("my_app:home"))
 
@@ -739,3 +756,10 @@ class CallUrlsTests(SousChefsTestCase):
 
     def test_get_list_my_cooking_sessions(self):
         self.client.get(reverse("my_app:list-my-cooking-sessions"))
+
+    def test_get_cooking_session_next_user_task(self):
+        self.client.force_login(self.regular_user)
+        self.client.get(
+            reverse("my_app:get-next-user-task", args=(self.cooking_session.id,)),
+            follow=True,
+        )

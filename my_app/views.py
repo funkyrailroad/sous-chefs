@@ -111,7 +111,7 @@ def get_next_user_task(request, cooking_session_id):
             # potentially could return something saying you've completed the
             # recipe!
             pass
-        return redirect("my_app:my-tasks-view")
+        return redirect(reverse("my_app:my-tasks-view", args=(group.id,)))
     return HttpResponseForbidden()
 
 
