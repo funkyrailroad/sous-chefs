@@ -1,20 +1,70 @@
 import io
-from django.shortcuts import redirect
-from django.http import HttpResponse, HttpResponseForbidden
+
+import pyqrcode
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
-from rest_framework import viewsets
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import redirect
+from django.template.response import TemplateResponse
+from django.urls import reverse_lazy, reverse
+from django.views.generic import DetailView, ListView
+from django.views.generic.edit import UpdateView
+from rest_framework import mixins, viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+import my_app.forms as f
 import my_app.models as m
 import my_app.serializers as s
 import my_app.utils as u
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import mixins
-import pyqrcode
 
-from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from django.template.response import TemplateResponse
-from rest_framework.exceptions import ValidationError
+
+class UserTaskUpdateView(UpdateView):
+    model = m.UserTask
+    fields = ["user", "task", "status"]
+
+    def get_success_url(self, **kwargs) -> str:
+        return reverse_lazy("my_app:usertask-detail", kwargs={"pk": self.object.pk})
+
+
+
+class UserTaskDetailView(DetailView):
+    model = m.UserTask
+
+
+class UserTaskPotentialBlockersView(ListView):
+    model = m.UserTask
+    template_name_suffix = "_list_potential_blockers"
+
+    def get_queryset(self):
+        pk = self.kwargs["pk"]
+        session = m.UserTask.objects.get(pk=pk).group
+        qs = session.usertask_set.active().exclude(pk=pk)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pk"] = self.kwargs["pk"]
+        return context
+
+
+class UserTaskBlockView(UpdateView):
+    model = m.UserTask
+    form_class = f.UserTaskBlockForm
+    template_name_suffix = "_block"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        usertask = self.get_object()
+        # get all active tasks in the cooking session
+        qs = u.get_all_usertasks_in_group(usertask.group.id)
+        kwargs["potential_blocking_tasks"] = qs.active().exclude(pk=usertask.pk)
+        return kwargs
+
+    def get_success_url(self, **kwargs) -> str:
+        return reverse_lazy("my_app:my-tasks-view", args=(self.object.group.id,))
 
 
 def index(request):
@@ -25,35 +75,28 @@ def home(request):
     return TemplateResponse(request, "my_app/home.html", {})
 
 
-def get_tasks_for_user(user_id: int) -> m.UserTask:
-    usertasks = m.UserTask.objects.filter(user=user_id)
-    return usertasks
-
-
 @login_required
-def my_tasks_view(request):
-    my_tasks = get_tasks_for_user(request.user.id)
+def cooking_sessions_my_tasks_view(request, pk):
+    my_tasks = u.get_tasks_for_user(request.user.id)
     my_tasks = my_tasks.order_by("-task__id")
-    my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
-    my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
-    group_id = my_tasks.first().group.id
-    context = {
-        "group_id": group_id,
-        "my_active_tasks": my_active_tasks,
-        "my_completed_tasks": my_completed_tasks,
-    }
-    return TemplateResponse(request, "my_app/my-tasks-view.html", context)
+    context = {"group_id": pk}
+    if my_tasks.count() != 0:
+        my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
+        my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
+        context.update({
+            "my_active_tasks": my_active_tasks,
+            "my_completed_tasks": my_completed_tasks,
+        })
+    return TemplateResponse(request, "my_app/cooking-sessions-my-tasks-view.html", context)
 
 
 @login_required
 def complete_user_task(request, usertask_id):
+    """Mark user task as completed."""
     if request.method == "POST":
         user_task = m.UserTask.objects.get(id=usertask_id)
-        user_task.status = m.UserTask.TaskStatus.COMPLETED
-        user_task.save()
-        cooking_group = user_task.group
-        recipe = u.get_recipe_from_user_task(user_task)
-        return redirect("my_app:my-tasks-view")
+        user_task.mark_as_completed()
+        return redirect(reverse("my_app:my-tasks-view", args=(user_task.group.id,)))
     return HttpResponseForbidden()
 
 
@@ -68,7 +111,7 @@ def get_next_user_task(request, cooking_session_id):
             # potentially could return something saying you've completed the
             # recipe!
             pass
-        return redirect("my_app:my-tasks-view")
+        return redirect(reverse("my_app:my-tasks-view", args=(group.id,)))
     return HttpResponseForbidden()
 
 
@@ -87,6 +130,7 @@ def recipes_detail_view(request, recipe_id):
 
 @login_required
 # Could make sense if this is for admins only
+# This should probably be a POST, and redirect to the detail view
 def create_cooking_session_view(request, recipe_id):
     recipe = u.get_recipe(recipe_id)
 
@@ -103,9 +147,6 @@ def create_cooking_session_view(request, recipe_id):
 def list_my_cooking_sessions(request):
     user = request.user
     cooking_sessions = user.groups.all()
-    if cooking_sessions.count() == 1:
-        # redirect to the only cooking session
-        return redirect("my_app:my-cooking-session", cooking_sessions.first().id)
     context = dict(cooking_sessions=cooking_sessions)
     return TemplateResponse(request, "my_app/list-my-cooking-sessions.html", context)
 
@@ -144,7 +185,7 @@ def join_cooking_session_view(request, group_id):
         u.get_next_task_for_user(request.user.id, recipe.id, group.id)
     except u.AllUserTasksAssigned:
         pass
-    return redirect("my_app:my-tasks-view")
+    return redirect(reverse("my_app:my-tasks-view", args=(group.id,)))
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):

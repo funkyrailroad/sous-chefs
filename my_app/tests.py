@@ -1,14 +1,13 @@
-from django.test import TestCase
-from rest_framework.test import APIClient
-from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
 
-from my_app.models import Recipe, Task, UserTask, Group
-from my_app.data import test_recipe
 import my_app.utils as u
+from my_app.data import test_recipe
+from my_app.models import Group, Recipe, Task, UserTask
 
 User = get_user_model()
-
 
 
 def create_recipe(recipe_dict) -> Recipe:
@@ -60,6 +59,14 @@ def create_admin_test_users(n_users: int) -> list[User]:
         )
         users.append(user)
     return users
+
+
+def create_admin_and_regular_users(
+    n_admin_users: int, n_regular_users: int
+) -> tuple[list[User], list[User]]:
+    admin_users = create_admin_test_users(n_admin_users)
+    regular_users = create_regular_test_users(n_regular_users)
+    return admin_users, regular_users
 
 
 class SousChefsTestCase(TestCase):
@@ -240,7 +247,7 @@ class AssignNextTaskTests(SousChefsTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as completed
-        first_unassigned_task = u.get_first_unassigned_task(
+        first_unassigned_task = u.get_first_upcoming_task(
             self.recipe_id, self.cooking_group.id
         )
         first_unassigned_task.user = self.user
@@ -274,7 +281,7 @@ class AssignNextTaskTests(SousChefsTestCase):
         self.assertEqual(len(tasks), 0)
 
         # assign task and mark it as active
-        first_unassigned_task = u.get_first_unassigned_task(
+        first_unassigned_task = u.get_first_upcoming_task(
             self.recipe_id, self.cooking_group.id
         )
         first_unassigned_task.user = self.user
@@ -310,7 +317,7 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
                     recipe_id=self.recipe_id,
                 ),
             ),
-            follow=True
+            follow=True,
         )
         self.assertEqual(resp.status_code, 200)
         context = resp.context
@@ -319,7 +326,9 @@ class CreateCookingSessionViewTests(SousChefsTestCase):
         self.assertNotIn(self.regular_user, group.user_set.all())
 
         # Check name of group
-        self.assertEqual(group.name, f"Cook {self.recipe.name} with {self.admin_user.first_name}")
+        self.assertEqual(
+            group.name, f"Cook {self.recipe.name} with {self.admin_user.first_name}"
+        )
 
         # admin has a task
         self.assertTrue(
@@ -478,7 +487,9 @@ class CookingSessionTests(SousChefsTestCase):
 
     def test_get_my_cooking_session_view(self):
         self.client.force_login(user=self.regular_user_1a)
-        resp = self.client.get(reverse("my_app:my-cooking-session", args=(self.cooking_group_1.id,)))
+        resp = self.client.get(
+            reverse("my_app:my-cooking-session", args=(self.cooking_group_1.id,))
+        )
         self.assertEqual(resp.status_code, 200)
 
 
@@ -498,25 +509,25 @@ class MyTasksTests(SousChefsTestCase):
             recipe_id=recipe.id,
             description="Test task 2",
         )
-        group = Group.objects.create(name="Test group")
-        u.add_user_to_group(cls.user.id, group.id)
+        cls.group = Group.objects.create(name="Test group")
+        u.add_user_to_group(cls.user.id, cls.group.id)
         usertask1 = UserTask.objects.create(
             user=cls.user,
             task=task_1,
-            group=group,
+            group=cls.group,
             status=UserTask.TaskStatus.ACTIVE,
         )
         usertask2 = UserTask.objects.create(
             # user=cls.user,
             task=task_2,
-            group=group,
+            group=cls.group,
             status=UserTask.TaskStatus.UPCOMING,
         )
 
     def test_mark_task_complete(self):
         # call my tasks endpoint, see it
         self.client.force_login(user=self.user)
-        resp = self.client.get(reverse("my_app:my-tasks-view"))
+        resp = self.client.get(reverse("my_app:my-tasks-view", args=(self.group.id,)))
         my_active_tasks = resp.context["my_active_tasks"]
         self.assertEqual(len(my_active_tasks), 1)
         my_active_task = my_active_tasks[0]
@@ -607,5 +618,148 @@ class SeeGroupTasksTests(SousChefsTestCase):
         u.assign_initial_tasks_to_users(group_users, group_user_task_objs)
 
         # call the endpoint for an admin to see all the tasks
+
     def test_1(self):
-        resp = self.client.get(reverse("my_app:usertasks-in-group", args=(self.cooking_group.id,)))
+        resp = self.client.get(
+            reverse("my_app:usertasks-in-group", args=(self.cooking_group.id,))
+        )
+
+
+class BlockingTasksTests(SousChefsTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        recipe_dict = {
+            "name": "Bratwurst with pesto pasta, greek salad and fruit",
+            "tasks": [
+                "get out pot for cooking pasta, fill it with water, and start boiling the water",  # 1a takes time
+                "fry bratwurst in a pan on medium heat until golden brown",  # 2a takes time
+                "start playing some music, ask everybody for one or two songs to add to the queue, and add them",  # fun-a
+                "Add pasta to boiling water for proper duration and strain it when done",  # 1b takes time
+                "Get out a serving bowl for the salad and tell others this is the salad bowl",  # 3a
+                "get bell peppers, rinse, remove seeds, slice into squares and put into salad bowl",  # 3b
+                "Get cucumbers, rinse, slice into bite-size pieces and put into salad bowl",  # 3c
+                "Get tomatoes, rinse, slice into bite-size pieces and put into salad bowl",  # 3d
+                "Get red onion, rinse, slice into thin rings and put into salad bowl",  # 3e
+            ],
+        }
+        cls.recipe = create_recipe(recipe_dict)
+        # create all user tasks for the recipe
+        cls.cooking_session = u.get_or_initialize_cooking_session(
+            "Test cooking session", cls.recipe.id
+        )
+        admin_users, regular_users = create_admin_and_regular_users(1, 3)
+        cls.admin_user = admin_users[0]
+        cls.regular_user_1 = regular_users[0]
+        cls.regular_user_2 = regular_users[1]
+        cls.regular_user_3 = regular_users[2]
+
+        all_users = [*admin_users, *regular_users]
+        all_user_ids = [user.id for user in all_users]
+        # add the three users to the cooking group
+        u.add_users_to_group(all_user_ids, cls.cooking_session.id)
+
+        usertasks = u.get_all_usertasks_in_group(cls.cooking_session.id)
+        cls.initial_tasks = u.assign_initial_tasks_to_users(all_users, usertasks)
+
+    def test_blocked_task_not_distributed_until_freed(self):
+        blocked_usertask: UserTask = self.regular_user_3.usertask_set.active().get()
+        blocking_usertask: UserTask = self.admin_user.usertask_set.active().get()
+
+        # reg_user_3 marks task as blocked by first task
+        blocked_usertask.mark_as_blocked_by(blocking_usertask)
+        u.get_next_task_for_user(
+            self.regular_user_3.id, self.recipe.id, self.cooking_session.id
+        )
+        # check that regular_user_3 has an active task
+        self.assertEqual(self.regular_user_3.usertask_set.active().count(), 1)
+
+        # Assign and complete all remaining tasks
+        while True:
+            try:
+                usertask = u.get_next_task_for_user(
+                    self.regular_user_3.id, self.recipe.id, self.cooking_session.id
+                )
+                usertask.mark_as_completed()
+            except u.AllUserTasksAssigned:
+                break
+
+        self.assertEqual(self.regular_user_3.usertask_set.active().count(), 0)
+
+        # complete the blocking task
+        blocking_usertask.mark_as_completed()
+        blocking_usertask.mark_blocked_tasks_as_upcoming()
+
+        # assign another task to the user
+        usertask = u.get_next_task_for_user(
+            self.regular_user_3.id, self.recipe.id, self.cooking_session.id
+        )
+        # verify the task that is assigned is the task that was blocked
+        self.assertEqual(usertask, blocked_usertask)
+
+        # verify no more available upcoming tasks
+        with self.assertRaises(u.AllUserTasksAssigned):
+            u.get_first_upcoming_task(self.recipe.id, self.cooking_session.id)
+
+    def test_list_potential_blockers_only_active_tasks_and_block(self):
+        resp = self.client.get(
+            reverse(
+                "my_app:potential-blockers",
+                args=(self.regular_user_3.usertask_set.active().get().id,),
+            )
+        )
+        context = resp.context
+        object_list = context["object_list"]
+        statuses_in_response = {usertask.status for usertask in object_list}
+        self.assertIn(UserTask.TaskStatus.ACTIVE, statuses_in_response)
+        self.assertEqual(len(statuses_in_response), 1)
+
+        blocked_ut = object_list[0]
+        blocking_ut = object_list[1]
+
+        # specify the blocked task
+        resp = self.client.post(
+            reverse("my_app:block-user-task", args=(blocked_ut.id,)),
+            data=dict(
+                blocked_by=blocking_ut.id,
+                status=UserTask.TaskStatus.BLOCKED,
+                user="",
+            ),
+        )
+
+
+class CallUrlsTests(SousChefsTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.recipe = create_test_recipe()
+        cls.cooking_session = u.get_or_initialize_cooking_session(
+            "Test cooking session", cls.recipe.id
+        )
+        admin_users, regular_users = create_admin_and_regular_users(1, 1)
+        cls.admin_user = admin_users[0]
+        cls.regular_user = regular_users[0]
+
+        all_users = [*admin_users, *regular_users]
+        all_user_ids = [user.id for user in all_users]
+        usertasks = u.get_all_usertasks_in_group(cls.cooking_session.id)
+        u.add_users_to_group(all_user_ids, cls.cooking_session.id)
+        u.assign_initial_tasks_to_users(all_users, usertasks)
+        cls.initial_tasks = u.assign_initial_tasks_to_users(all_users, usertasks)
+
+    def test_get_home(self):
+        self.client.get(reverse("my_app:home"))
+
+    def test_get_index(self):
+        self.client.get(reverse("my_app:index"))
+
+    def test_get_recipes_list_view(self):
+        self.client.get(reverse("my_app:recipes-list-view"))
+
+    def test_get_list_my_cooking_sessions(self):
+        self.client.get(reverse("my_app:list-my-cooking-sessions"))
+
+    def test_get_cooking_session_next_user_task(self):
+        self.client.force_login(self.regular_user)
+        self.client.get(
+            reverse("my_app:get-next-user-task", args=(self.cooking_session.id,)),
+            follow=True,
+        )

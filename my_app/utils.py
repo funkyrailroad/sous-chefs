@@ -1,7 +1,8 @@
-from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from my_app.models import Task, UserTask, Recipe
+from django.urls import reverse
+
+from my_app.models import Recipe, Task, UserTask
 
 User = get_user_model()
 
@@ -19,6 +20,10 @@ def assign_initial_tasks_to_users(
         initially_assigned_tasks.append(user_task_obj)
     UserTask.objects.bulk_update(initially_assigned_tasks, ["user", "status"])
     return initially_assigned_tasks
+
+
+def get_all_usertasks_in_group(group_id: int) -> list[UserTask]:
+    return UserTask.objects.filter(group_id=group_id).order_by("task__id")
 
 
 def get_recipe(recipe_id: int) -> Recipe:
@@ -53,6 +58,11 @@ def add_user_to_group(user_id: int, group_id: int) -> None:
     user.groups.add(group)
 
 
+def add_users_to_group(user_ids: list[int], group_id: int) -> None:
+    for user_id in user_ids:
+        add_user_to_group(user_id, group_id)
+
+
 def get_or_initialize_cooking_session(cooking_group_name: str, recipe_id: int):
     cooking_group, created = Group.objects.get_or_create(name=cooking_group_name)
     if created:
@@ -83,7 +93,7 @@ def get_next_task_for_user(user_id: int, recipe_id: int, group_id: int) -> UserT
     except UserTask.DoesNotExist:
         pass
 
-    user_task = get_first_unassigned_task(recipe_id, group_id)
+    user_task = get_first_upcoming_task(recipe_id, group_id)
     user_task.user_id = user_id
     user_task.status = UserTask.TaskStatus.ACTIVE
     user_task.save()
@@ -95,18 +105,19 @@ class AllUserTasksAssigned(Exception):
         super().__init__("All tasks have been assigned.")
 
 
-def get_first_unassigned_task(recipe_id: int, group_id: int) -> UserTask:
-    # Now that group_id has been added, I probably don't need recipe_id
-    # anymore. Although it may allow for a single group to prepare multiple
-    # recipes at the same time.
-    first_unassigned_task = (
-        UserTask.objects.filter(user=None, task__recipe=recipe_id, group_id=group_id)
+def get_first_upcoming_task(recipe_id: int, group_id: int) -> UserTask:
+    first_upcoming_task = (
+        UserTask.objects.filter(
+            status=UserTask.TaskStatus.UPCOMING,
+            task__recipe=recipe_id,
+            group_id=group_id,
+        )
         .order_by("task_id")
         .first()
     )
-    if first_unassigned_task is None:
+    if first_upcoming_task is None:
         raise AllUserTasksAssigned()
-    return first_unassigned_task
+    return first_upcoming_task
 
 
 def get_currently_assigned_task(
@@ -130,3 +141,8 @@ def create_cooking_session_join_url(request, cooking_session_id):
     return request.build_absolute_uri(
         reverse("my_app:join-cooking-session", args=[cooking_session_id])
     )
+
+
+def get_tasks_for_user(user_id: int) -> UserTask:
+    usertasks = UserTask.objects.filter(user=user_id)
+    return usertasks

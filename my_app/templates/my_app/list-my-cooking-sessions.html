@@ -6,6 +6,9 @@
     <p>
       <a href="{% url 'my_app:my-cooking-session' cooking_session_id=cooking_session.id %}"> {{ cooking_session }} </a>
     </p>
+    <p>
+      <a href="{% url 'my_app:my-tasks-view' cooking_session.id %}">My Tasks</a> </h3>
+    </p>
   </div>
 {% endfor %}
 

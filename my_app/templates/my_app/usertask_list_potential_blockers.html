@@ -1,0 +1,36 @@
+{% extends "my_app/base.html" %}
+{% block body %}
+
+  <h1 class="title is-3">Identify blocking tasks</h1>
+
+  {% for usertask in object_list %}
+
+    <div class="row">
+      <div class="col-md-6">
+        <form method="post" action="{% url 'my_app:block-user-task' pk %}" class="w-100 h-100" >
+          {% csrf_token %}
+          <input type="hidden" name="blocked_by" value="{{ usertask.id }}">
+          <input type="hidden" name="status" value="BL">
+          <input type="hidden" name="user" value="">
+          <button type="submit" class="w-100 h-100 border-0 p-0 text-start bg-transparent">
+            <div class="p-3 border rounded shadow-sm hover-bg">
+              <div class="row">
+                {{ usertask.task.description }}
+              </div>
+              <div class="row">
+                - {{ usertask.user.first_name }}
+              </div>
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+
+
+  {% empty %}
+
+    <p>No potentially blocking tasks.</p>
+
+  {% endfor %}
+
+{% endblock %}

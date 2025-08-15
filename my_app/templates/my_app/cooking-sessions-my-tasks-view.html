@@ -12,6 +12,13 @@
           Mark as complete
         </button>
       </form>
+
+      <form action="{% url 'my_app:potential-blockers' task.id %}" method="get" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button is-small is-danger">
+          Mark as blocked
+        </button>
+      </form>
     </div>
   {% empty %}
       <form method="get" action="{% url 'my_app:get-next-user-task' group_id %}">
