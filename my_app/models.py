@@ -58,9 +58,10 @@ class UserTask(models.Model):
             models.UniqueConstraint(fields=["task", "group"], name="unique user tasks")
         ]
 
-    def mark_as_completed(self):
-        # if this task blocks any others, unblock those tasks
+    def mark_as_completed(self, unblock_blocked_tasks: bool = True):
         self.status = UserTask.TaskStatus.COMPLETED
+        if unblock_blocked_tasks:
+            self.mark_blocked_tasks_as_upcoming()
         self.save()
 
     def mark_blocked_tasks_as_upcoming(self):
