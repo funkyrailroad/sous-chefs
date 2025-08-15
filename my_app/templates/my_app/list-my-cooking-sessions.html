@@ -10,6 +10,10 @@
       <a href="{% url 'my_app:my-tasks-view' cooking_session.id %}">My Tasks</a> </h3>
     </p>
   </div>
+{% empty %}
+  <div>
+    <p>You haven't joined any cooking sessions yet!</p>
+  </div>
 {% endfor %}
 
 {% endblock %}
