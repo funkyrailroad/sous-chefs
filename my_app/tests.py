@@ -690,7 +690,9 @@ class BlockingTasksTests(SousChefsTestCase):
         blocking_usertask.mark_blocked_tasks_as_upcoming()
 
         # assign another task to the user
-        usertask = u.get_next_task_for_user(self.regular_user_3.id, self.recipe.id, self.cooking_session.id)
+        usertask = u.get_next_task_for_user(
+            self.regular_user_3.id, self.recipe.id, self.cooking_session.id
+        )
         # verify the task that is assigned is the task that was blocked
         self.assertEqual(usertask, blocked_usertask)
 
@@ -698,9 +700,13 @@ class BlockingTasksTests(SousChefsTestCase):
         with self.assertRaises(u.AllUserTasksAssigned):
             u.get_first_upcoming_task(self.recipe.id, self.cooking_session.id)
 
-
-    def test_list_potential_blockers_only_active_tasks(self):
-        resp = self.client.get(reverse("my_app:potential-blockers", args=(self.regular_user_3.usertask_set.active().get().id,)))
+    def test_list_potential_blockers_only_active_tasks_and_block(self):
+        resp = self.client.get(
+            reverse(
+                "my_app:potential-blockers",
+                args=(self.regular_user_3.usertask_set.active().get().id,),
+            )
+        )
         context = resp.context
         object_list = context["object_list"]
         statuses_in_response = {usertask.status for usertask in object_list}
