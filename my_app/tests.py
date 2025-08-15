@@ -706,3 +706,16 @@ class BlockingTasksTests(SousChefsTestCase):
         statuses_in_response = {usertask.status for usertask in object_list}
         self.assertIn(UserTask.TaskStatus.ACTIVE, statuses_in_response)
         self.assertEqual(len(statuses_in_response), 1)
+
+        blocked_ut = object_list[0]
+        blocking_ut = object_list[1]
+
+        # specify the blocked task
+        resp = self.client.post(
+            reverse("my_app:block-user-task", args=(blocked_ut.id,)),
+            data=dict(
+                blocked_by=blocking_ut.id,
+                status=UserTask.TaskStatus.BLOCKED,
+                user="",
+            ),
+        )

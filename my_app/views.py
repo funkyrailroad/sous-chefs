@@ -54,7 +54,6 @@ class UserTaskBlockView(UpdateView):
     model = m.UserTask
     form_class = f.UserTaskBlockForm
     template_name_suffix = "_block"
-    success_url = reverse_lazy("my_app:my-tasks-view")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -63,6 +62,9 @@ class UserTaskBlockView(UpdateView):
         qs = u.get_all_usertasks_in_group(usertask.group.id)
         kwargs["potential_blocking_tasks"] = qs.active().exclude(pk=usertask.pk)
         return kwargs
+
+    def get_success_url(self, **kwargs) -> str:
+        return reverse_lazy("my_app:my-tasks-view", args=(self.object.group.id,))
 
 
 def index(request):
