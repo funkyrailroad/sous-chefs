@@ -61,6 +61,7 @@ urlpatterns = [
     path("create-cooking-session/<int:recipe_id>/", views.create_cooking_session_view, name="create-cooking-session"),
     path("join-cooking-session/<int:group_id>/", views.join_cooking_session_view, name="join-cooking-session"),
     path("cooking-session/<int:cooking_session_id>/join-qr-code", views.get_cooking_session_qr_code, name="join-cooking-session-qr-code"),
+    path("cooking-sessions/<int:pk>/my-tasks", views.cooking_sessions_my_tasks_view, name="my-tasks-view"),
     path("my-cooking-session/<int:cooking_session_id>/", views.my_cooking_session_view, name="my-cooking-session"),
     path("my-cooking-sessions/", views.list_my_cooking_sessions, name="list-my-cooking-sessions"),
     path("my-cooking-session/<int:cooking_session_id>/usertasks", views.usertasks_in_group, name="usertasks-in-group",),
