@@ -25,6 +25,10 @@ class UserTaskUpdateView(UpdateView):
     model = m.UserTask
     fields = ["user", "task", "status"]
 
+    def get_success_url(self, **kwargs) -> str:
+        return reverse_lazy("my_app:usertask-detail", kwargs={"pk": self.object.pk})
+
+
 
 class UserTaskDetailView(DetailView):
     model = m.UserTask
