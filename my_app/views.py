@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import UpdateView
 from rest_framework import mixins, viewsets
@@ -111,7 +111,7 @@ def complete_user_task(request, usertask_id):
     if request.method == "POST":
         user_task = m.UserTask.objects.get(id=usertask_id)
         user_task.mark_as_completed()
-        return redirect("my_app:my-tasks-view")
+        return redirect(reverse("my_app:my-tasks-view", args=(user_task.group.id,)))
     return HttpResponseForbidden()
 
 
@@ -200,7 +200,7 @@ def join_cooking_session_view(request, group_id):
         u.get_next_task_for_user(request.user.id, recipe.id, group.id)
     except u.AllUserTasksAssigned:
         pass
-    return redirect("my_app:my-tasks-view")
+    return redirect(reverse("my_app:my-tasks-view", args=(group.id,)))
 
 
 class RecipeViewSet(viewsets.ReadOnlyModelViewSet):

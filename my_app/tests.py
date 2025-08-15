@@ -509,25 +509,25 @@ class MyTasksTests(SousChefsTestCase):
             recipe_id=recipe.id,
             description="Test task 2",
         )
-        group = Group.objects.create(name="Test group")
-        u.add_user_to_group(cls.user.id, group.id)
+        cls.group = Group.objects.create(name="Test group")
+        u.add_user_to_group(cls.user.id, cls.group.id)
         usertask1 = UserTask.objects.create(
             user=cls.user,
             task=task_1,
-            group=group,
+            group=cls.group,
             status=UserTask.TaskStatus.ACTIVE,
         )
         usertask2 = UserTask.objects.create(
             # user=cls.user,
             task=task_2,
-            group=group,
+            group=cls.group,
             status=UserTask.TaskStatus.UPCOMING,
         )
 
     def test_mark_task_complete(self):
         # call my tasks endpoint, see it
         self.client.force_login(user=self.user)
-        resp = self.client.get(reverse("my_app:my-tasks-view"))
+        resp = self.client.get(reverse("my_app:my-tasks-view", args=(self.group.id,)))
         my_active_tasks = resp.context["my_active_tasks"]
         self.assertEqual(len(my_active_tasks), 1)
         my_active_task = my_active_tasks[0]
