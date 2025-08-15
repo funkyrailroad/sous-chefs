@@ -73,6 +73,23 @@ def home(request):
     return TemplateResponse(request, "my_app/home.html", {})
 
 
+# @login_required
+# def my_tasks_view(request):
+#     my_tasks = u.get_tasks_for_user(request.user.id)
+#     my_tasks = my_tasks.order_by("-task__id")
+#     context = {}
+#     if my_tasks.count() != 0:
+#         my_active_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.ACTIVE)
+#         my_completed_tasks = my_tasks.filter(status=m.UserTask.TaskStatus.COMPLETED)
+#         group_id = my_tasks.first().group.id
+#         context = {
+#             "group_id": group_id,
+#             "my_active_tasks": my_active_tasks,
+#             "my_completed_tasks": my_completed_tasks,
+#         }
+#     return TemplateResponse(request, "my_app/my-tasks-view.html", context)
+
+
 @login_required
 def my_tasks_view(request):
     my_tasks = u.get_tasks_for_user(request.user.id)
