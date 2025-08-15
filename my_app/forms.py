@@ -8,6 +8,9 @@ class UserTaskBlockForm(forms.ModelForm):
         model = m.UserTask
         fields = [
             "blocked_by",
+            "status",
+            "user",
+            # "reported_blocked_by",
         ]
 
     def __init__(self, *args, **kwargs):

@@ -35,7 +35,7 @@ class UserTaskQuerySet(models.QuerySet):
 
 
 class UserTask(models.Model):
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     blocked_by = models.ForeignKey("self", on_delete=models.DO_NOTHING, null=True, blank=True, related_name="blocked_tasks")

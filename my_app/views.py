@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import UpdateView
 from rest_framework import mixins, viewsets
 from rest_framework.exceptions import ValidationError
@@ -32,6 +32,22 @@ class UserTaskUpdateView(UpdateView):
 
 class UserTaskDetailView(DetailView):
     model = m.UserTask
+
+
+class UserTaskPotentialBlockersView(ListView):
+    model = m.UserTask
+    template_name_suffix = "_list_potential_blockers"
+
+    def get_queryset(self):
+        pk = self.kwargs["pk"]
+        session = m.UserTask.objects.get(pk=pk).group
+        qs = session.usertask_set.active().exclude(pk=pk)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pk"] = self.kwargs["pk"]
+        return context
 
 
 class UserTaskBlockView(UpdateView):

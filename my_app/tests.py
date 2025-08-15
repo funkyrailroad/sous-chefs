@@ -697,3 +697,12 @@ class BlockingTasksTests(SousChefsTestCase):
         # verify no more available upcoming tasks
         with self.assertRaises(u.AllUserTasksAssigned):
             u.get_first_upcoming_task(self.recipe.id, self.cooking_session.id)
+
+
+    def test_list_potential_blockers_only_active_tasks(self):
+        resp = self.client.get(reverse("my_app:potential-blockers", args=(self.regular_user_3.usertask_set.active().get().id,)))
+        context = resp.context
+        object_list = context["object_list"]
+        statuses_in_response = {usertask.status for usertask in object_list}
+        self.assertIn(UserTask.TaskStatus.ACTIVE, statuses_in_response)
+        self.assertEqual(len(statuses_in_response), 1)

@@ -54,6 +54,7 @@ urlpatterns = [
     path("my-tasks-view", views.my_tasks_view, name="my-tasks-view"),
     path("usertasks/<int:usertask_id>/complete", views.complete_user_task, name="complete-user-task"),
     path("usertasks/<int:pk>/block", views.UserTaskBlockView.as_view(), name="block-user-task"),
+    path("usertasks/<int:pk>/potential-blockers", views.UserTaskPotentialBlockersView.as_view(), name="potential-blockers"),
     path("usertasks/<int:pk>", views.UserTaskDetailView.as_view(), name="usertask-detail"),
     path("usertasks/<int:pk>/update", views.UserTaskUpdateView.as_view(), name="usertask-update"),
     path("my-cooking-session/<int:cooking_session_id>/get-next-usertask", views.get_next_user_task, name="get-next-user-task"),
